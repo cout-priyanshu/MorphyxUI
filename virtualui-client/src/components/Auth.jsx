@@ -7,6 +7,8 @@ import { linkWithCredential, signInWithPopup } from 'firebase/auth'
 import { auth, provider } from '../utils/firebase'
 import  axios  from "axios"
 import { ServerUrl } from '../App'
+import { useDispatch } from 'react-redux'
+import { setUserData } from '../redux/userSlice'
 
 const steps = [
   { icon: TbLogin2, title: "Login with Google", desc: "Secure OAuth to unlock all AI tools instantly." },
@@ -18,6 +20,7 @@ const steps = [
 
 function Auth({ onClose }) {
   const [active, setActive] = useState(0)
+  const dispatch = useDispatch()
 
   useEffect(() => {
     const id = setInterval(() => setActive((s) => (s + 1) % steps.length), 2400)
@@ -32,6 +35,8 @@ function Auth({ onClose }) {
       let email = User.email
       const result = await axios.post(ServerUrl + "/api/auth/google" ,
          {name, email} , {withCredentials: true})
+      dispatch(setUserData(result.data))
+      onClose()
     } catch (error) {
       console.log(error)
     }
