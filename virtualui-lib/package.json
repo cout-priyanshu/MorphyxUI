@@ -1,0 +1,23 @@
+{
+  "name": "priyanshu-virtual-ui",
+  "version": "1.0.1",
+  "description": "Virtual UI React component Library",
+  "license": "ISC",
+  "author": "Priyanshu",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup"
+  },
+  "keywords": [],
+  "peerDependencies": {
+    "react": "^19.3.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^7.0.2"
+  }
+}
