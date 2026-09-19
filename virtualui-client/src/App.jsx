@@ -4,6 +4,8 @@ import Home from './pages/Home'
 import axios from 'axios'
 import { useDispatch } from 'react-redux'
 import { setUserData } from './redux/userSlice'
+import CustomCursor from './components/CustomCursor'
+import Generate from './pages/Generate'
 
 export const ServerUrl = "http://localhost:8000"
 
@@ -24,8 +26,10 @@ function App() {
   },[])
   return (
     <div>
+      <CustomCursor />
       <Routes>
         <Route path='/' element={<Home/>} />
+        <Route path='/generate' element={<Generate/>} />
       </Routes>
     </div>
   )
