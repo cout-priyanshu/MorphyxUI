@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import Auth from '../components/Auth'
-import { SiValorant } from 'react-icons/si'
+import { TbHexagonLetterM } from "react-icons/tb";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 import { useDispatch, useSelector } from 'react-redux'
 import { HiSparkles } from 'react-icons/hi2'
@@ -131,13 +131,13 @@ function Home() {
       <nav className='sticky top-0 z-40 flex items-center justify-between px-5 sm:px-10 lg:px-14 py-4 border-b border-white/[0.06] bg-[#070507]/85 backdrop-blur-2xl'>
         <div className='flex items-center gap-3 cursor-pointer group' onClick={() => navigate('/')}>
           <div className='w-8 h-8 rounded-lg bg-gradient-to-b from-[#2a171f] to-[#170c11] border border-[#e11d48]/20 flex items-center justify-center text-[#f43f5e] shadow-sm group-hover:border-[#e11d48]/40 transition-colors'>
-            <SiValorant size={15} />
+            <TbHexagonLetterM size={15} />
           </div>
           <span
             className='text-lg font-bold tracking-tight text-[#f5eff2]'
             style={{ fontFamily: "'Syne', sans-serif" }}
           >
-            VirtualUI
+            MorphyxUI
           </span>
         </div>
 
@@ -330,7 +330,7 @@ function Home() {
         >
           <div className='flex items-center gap-3 bg-[#0d090b] border border-white/[0.08] hover:border-white/20 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-mono w-full max-w-sm sm:max-w-fit transition-colors'>
             <TbTerminal2 size={16} className='text-[#f43f5e]' />
-            <span className='text-[#f5eff2]/80 font-normal truncate'>npm install priyanshu-virtual-ui</span>
+            <span className='text-[#f5eff2]/80 font-normal truncate'>npm install morphyx-ui</span>
             <button 
               onClick={handleCopy}
               className='ml-2 text-[#f5eff2]/40 hover:text-[#f43f5e] transition-colors cursor-pointer bg-transparent border-none flex-shrink-0'
@@ -383,13 +383,13 @@ function Home() {
                 <span className='ml-2.5 text-xs text-[#f5eff2]/35 font-mono'>DashboardView.jsx</span>
               </div>
               <span className='text-[10px] font-mono text-[#f43f5e] px-2 py-0.5 rounded bg-[#f43f5e]/10 border border-[#f43f5e]/20'>
-                VirtualUI v2.4
+                MorphyxUI v2.4
               </span>
             </div>
 
             <div className='font-mono text-xs leading-relaxed space-y-1 overflow-x-auto select-none'>
               <p>
-                <span className='text-[#f43f5e]'>import</span> <span className='text-[#f5eff2]'>{"{ GlassCard, Button, StatBadge }"}</span> <span className='text-[#f43f5e]'>from</span> <span className='text-[#fbcfe8]/80'>'priyanshu-virtual-ui'</span><span className='text-white/30'>;</span>
+                <span className='text-[#f43f5e]'>import</span> <span className='text-[#f5eff2]'>{"{ GlassCard, Button, StatBadge }"}</span> <span className='text-[#f43f5e]'>from</span> <span className='text-[#fbcfe8]/80'>'morphyx-ui'</span><span className='text-white/30'>;</span>
               </p>
               <p className='text-transparent'>_</p>
               <p>
@@ -523,7 +523,7 @@ function Home() {
         <div className='text-center mb-10'>
           <p className='text-xs font-semibold tracking-[2px] uppercase text-[#f43f5e] mb-2'>Inside The Architecture</p>
           <h2 className='text-2xl sm:text-4xl font-bold tracking-tight text-[#f5eff2]' style={{ fontFamily: "'Syne', sans-serif" }}>
-            Why Developers Pick VirtualUI
+            Why Developers Pick MorphyxUI
           </h2>
         </div>
 
@@ -656,10 +656,10 @@ function Home() {
         <div className='max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-5 sm:gap-0'>
           <div className='flex items-center gap-2.5 cursor-pointer' onClick={() => navigate('/')}>
             <div className='w-7 h-7 rounded-lg bg-[#2a171f] border border-[#e11d48]/20 flex items-center justify-center text-[#f43f5e]'>
-              <SiValorant size={14} />
+              <TbHexagonLetterM size={14} />
             </div>
             <span className='text-base font-bold tracking-tight text-[#f5eff2]' style={{ fontFamily: "'Syne', sans-serif" }}>
-              VirtualUI
+              MorphyxUI
             </span>
           </div>
 
@@ -671,12 +671,12 @@ function Home() {
               Documentation
             </span>
             <span className='hover:text-[#f43f5e] transition-colors cursor-pointer'>
-              admin@virtualui.com
+              admin@morphyxui.com
             </span>
           </div>
 
           <p className='text-xs text-[#f5eff2]/30'>
-            © {new Date().getFullYear()} VirtualUI Engine. All rights reserved.
+            © {new Date().getFullYear()} MorphyxUI Engine. All rights reserved.
           </p>
         </div>
       </footer>

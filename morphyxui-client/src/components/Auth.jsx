@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from "framer-motion"
-import { SiValorant } from "react-icons/si"
+import { TbHexagonLetterM } from "react-icons/tb";
 import { HiSparkles } from "react-icons/hi2"
 import { TbCopy, TbSettings, TbDownload, TbLogin2, TbX } from 'react-icons/tb'
 import { signInWithPopup } from 'firebase/auth'
@@ -70,13 +70,13 @@ function Auth({ onClose }) {
             <div className='relative z-10'>
               <div className='flex items-center gap-2.5 mb-6'>
                 <div className='w-8 h-8 rounded-lg bg-[#2a171f] border border-[#e11d48]/30 flex items-center justify-center text-[#f43f5e]'>
-                  <SiValorant size={15} />
+                  <TbHexagonLetterM size={15} />
                 </div>
                 <span
                   className='text-lg font-bold text-[#f5eff2] tracking-tight'
                   style={{ fontFamily: "'Syne', sans-serif" }}
                 >
-                  VirtualUI
+                  MorphyxUI
                 </span>
               </div>
 
@@ -134,11 +134,11 @@ function Auth({ onClose }) {
           <div className='w-full md:w-[50%] bg-[#080608] p-6 sm:p-8 flex flex-col items-center justify-center text-center relative'>
             <div className='w-full max-w-[260px] flex flex-col items-center'>
               <div className='w-10 h-10 rounded-xl bg-[#2a171f] border border-[#e11d48]/30 flex items-center justify-center text-[#f43f5e] mb-3'>
-                <SiValorant size={18} />
+               <TbHexagonLetterM size={18} />
               </div>
 
               <h3 className='text-lg font-bold text-[#f5eff2] mb-1' style={{ fontFamily: "'Syne', sans-serif" }}>
-                Welcome to VirtualUI
+                Welcome to MorphyxUI
               </h3>
               <p className='text-xs text-[#f5eff2]/45 mb-5 leading-relaxed'>
                 Sign in with your account to get instant access to generated UI code.

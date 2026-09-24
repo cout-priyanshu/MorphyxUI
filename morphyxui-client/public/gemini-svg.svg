@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Dark Stealth Metal Gradients -->
+    <linearGradient id="darkLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2a2e39"/>
+      <stop offset="100%" stop-color="#0f1117"/>
+    </linearGradient>
+
+    <linearGradient id="darkRight" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#222630"/>
+      <stop offset="100%" stop-color="#090a0f"/>
+    </linearGradient>
+
+    <!-- Center Sharp Wings Gradient -->
+    <linearGradient id="darkCenter" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3b4252"/>
+      <stop offset="100%" stop-color="#141721"/>
+    </linearGradient>
+
+    <!-- Futuristic Cyan Accent Gradients -->
+    <linearGradient id="cyanGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f5ff"/>
+      <stop offset="100%" stop-color="#0077ff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left Pillar with Tech Cut -->
+  <path d="M 72 432 L 72 160 L 168 80 L 168 432 Z" 
+        fill="url(#darkLeft)" 
+        stroke="#33394a" 
+        stroke-width="3"/>
+
+  <!-- Right Pillar with Tech Cut -->
+  <path d="M 440 432 L 440 160 L 344 80 L 344 432 Z" 
+        fill="url(#darkRight)" 
+        stroke="#33394a" 
+        stroke-width="3"/>
+
+  <!-- Center Diagonal Vertex (Dark Geometric Chevron) -->
+  <path d="M 168 180 L 256 312 L 344 180 L 344 260 L 256 392 L 168 260 Z" 
+        fill="url(#darkCenter)" 
+        stroke="#4c566a" 
+        stroke-width="2"/>
+
+  <!-- Glowing Cyan Morph Core (Upper Precision Diamond) -->
+  <polygon points="256,96 304,168 256,220 208,168" 
+           fill="url(#cyanGlow)"/>
+
+  <!-- Subtle Cyan Bottom Anchor Accent -->
+  <polygon points="256,412 280,448 232,448" 
+           fill="#00f5ff"/>
+</svg>

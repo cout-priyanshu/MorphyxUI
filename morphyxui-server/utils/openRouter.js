@@ -7,7 +7,7 @@ export const askAI = async (message) => {
             
         }
         const reponse = await axios.post("https://openrouter.ai/api/v1/chat/completions" , {
-            model: "deepseek/deepseek-chat",
+            model: "openai/gpt-4o-mini",
             messages: messages,
             temperature: 0.7,
             max_tokens: 2000,
