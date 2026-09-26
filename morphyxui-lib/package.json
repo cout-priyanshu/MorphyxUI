@@ -1,7 +1,7 @@
 {
-  "name": "priyanshu-virtual-ui",
-  "version": "1.0.1",
-  "description": "Virtual UI React component Library",
+  "name": "morphyx-ui",
+  "version": "1.0.2",
+  "description": "MorphyxUI React component Library",
   "license": "ISC",
   "author": "Priyanshu",
   "main": "dist/index.js",

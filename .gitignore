@@ -1,3 +1,4 @@
+.npmrc
 .env
 node_modules
 *.env
@@ -25,3 +26,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.env

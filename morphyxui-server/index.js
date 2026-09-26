@@ -24,7 +24,7 @@ app.get("/", (req,res) => {
 
 app.use("/api/auth", authRouter)
 app.use("/api/user", userRouter)
-app.use("/api/component" , componentRouter)
+app.use("/api/components" , componentRouter)
 
 app.use("/api/auth", authRouter)
 const PORT = process.env.PORT

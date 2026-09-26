@@ -82,7 +82,7 @@ const Generate = () => {
 
     try {
       const { data } = await axios.post(
-        `${ServerUrl}/api/component/generate`,
+        `${ServerUrl}/api/components/generate`,
         { prompt },
         { withCredentials: true }
       )
@@ -129,7 +129,7 @@ const Generate = () => {
     setPublishing(true)
     try {
       await axios.post(
-        `${ServerUrl}/api/component/publish`,
+        `${ServerUrl}/api/components/publish`,
         { componentId: savedComponentId },
         { withCredentials: true }
       )

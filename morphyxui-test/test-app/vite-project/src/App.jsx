@@ -1,5 +1,6 @@
 import React from 'react'
-import {Button, Card, ProfileCard} from "priyanshu-virtual-ui"
+import {Button, Card, ProfileCard } from "priyanshu-virtual-ui"
+import NeonLightningButton from "morphyx-ui"
 
 const App = () => {
   return (
@@ -7,6 +8,7 @@ const App = () => {
       <Button/>
       <Card/>
       <ProfileCard/>
+      < NeonLightningButton />
     </div>
   )
 }

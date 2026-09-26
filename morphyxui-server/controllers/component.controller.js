@@ -74,7 +74,7 @@ export const publishComponent = async (req, res) => {
             })
         }
 
-        const libPath = path.join(process.cwd(), "../virtualui-lib")
+        const libPath = path.join(process.cwd(), "../morphyxui-lib")
         const componentDir = path.join(libPath, "src/components", component.name)
         const componentFile = path.join(componentDir, `${component.name}.jsx`)
         const indexFile = path.join(libPath, "src/index.js")
@@ -121,7 +121,7 @@ export const publishComponent = async (req, res) => {
         })
 
         component.visibility = "public"
-        component.npmPackage = "priyanshu-virtual-ui"
+        component.npmPackage = "morphyx-ui"
 
         await component.save()
 
@@ -129,5 +129,17 @@ export const publishComponent = async (req, res) => {
     } catch (error) {
         console.error("Publish Error:", error)
         return res.status(500).json({ message: `Component publish error: ${error.message}` })
+    }
+}
+
+export const getAllComponents = async (req, res) => {
+    try {
+        const components = await Component.find().populate("owner", "name , email").sort({createdAt:-1})
+        if(!components){
+            return res.status(404).json({message:"Components are not found"})
+        }
+        return res.status(200).json(components)
+    } catch (error) {
+        return res.status(500).json({message:"`Failed to get All Components ${error}`"})
     }
 }

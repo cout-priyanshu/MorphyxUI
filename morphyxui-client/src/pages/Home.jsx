@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Auth from '../components/Auth'
 import { TbHexagonLetterM } from "react-icons/tb";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion"
@@ -85,6 +85,13 @@ function Home() {
   const dispatch = useDispatch()
   const [menuOpen, setMenuOpen] = useState(false)
   const navigate = useNavigate()
+
+  useEffect(()=>{
+    if(userData?.role === "admin"){
+      navigate("/admin")
+    }
+  }, [userdata])
+
 
   const getLetters = (name) => {
     if (!name) return "U"
