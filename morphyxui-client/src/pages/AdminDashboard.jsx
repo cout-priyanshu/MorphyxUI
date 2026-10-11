@@ -12,6 +12,12 @@ import {
   TbWorld,
   TbSearch,
   TbBoxOff,
+  TbCodeDots,
+  TbDeviceFloppy,
+  TbEye,
+  TbX,
+  TbLoader,
+  TbCheck,
 } from "react-icons/tb"
 import { ServerUrl } from '../App'
 import { setUserData } from '../redux/userSlice'
@@ -19,6 +25,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AreaChart, Area, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { LiveComponentPreview } from '../components/LiveComponentPreview'
 
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
@@ -26,6 +33,273 @@ function CustomTooltip({ active, payload, label }) {
     <div className='bg-[#170f14] border border-[#e11d48]/20 rounded-xl px-3 py-2 text-xs shadow-2xl backdrop-blur-md'>
       <p className='text-[#f5eff2]/50 mb-1'>{label}</p>
       <p className='text-[#f43f5e] font-bold'>{payload[0].value} components</p>
+    </div>
+  )
+}
+
+function PropsInput({ props = [], setProps }) {
+  const [input, setInput] = useState("")
+  const addProps = () => {
+    const trimmed = input.trim()
+    if (trimmed && !props.includes(trimmed)) {
+      setProps([...props, trimmed])
+    }
+    setInput("")
+  }
+  const removeProps = (p) => setProps(props.filter((x) => x !== p))
+
+  return (
+    <div>
+      <div className='flex flex-wrap gap-1.5 mb-2 min-h-[28px]'>
+        {props.map((p) => (
+          <span
+            key={p}
+            className='flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#2a171f] text-[#fbcfe8] border border-[#e11d48]/30'
+          >
+            {p}
+            <button
+              type='button'
+              onClick={() => removeProps(p)}
+              className='ml-0.5 text-[#fda4af]/70 hover:text-[#fda4af] transition-opacity bg-transparent border-none cursor-pointer p-0 leading-none flex items-center'
+            >
+              <TbX size={11} />
+            </button>
+          </span>
+        ))}
+        {props.length === 0 && (
+          <span className='text-xs text-white/20 self-center'>No props added yet</span>
+        )}
+      </div>
+      <div className='flex gap-2'>
+        <input
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === ",") {
+              e.preventDefault()
+              addProps()
+            }
+          }}
+          onChange={(e) => setInput(e.target.value)}
+          value={input}
+          placeholder='e.g. "title", "onClick", "children"'
+          className='flex-1 min-w-0 bg-[#170f14] border border-white/10 rounded-xl px-3 py-2 text-sm text-[#f5eff2] placeholder-white/20 outline-none focus:border-[#e11d48]/50 transition-colors'
+        />
+        <button
+          type='button'
+          onClick={addProps}
+          className='px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold cursor-pointer transition-all whitespace-nowrap bg-[#2a171f] text-[#fbcfe8] border border-[#e11d48]/30 hover:bg-[#381a27]'
+        >
+          Add
+        </button>
+      </div>
+      <p className='text-[10px] text-white/30 mt-1.5'>
+        Press <span className='px-1.5 py-0.5 rounded bg-white/5 text-white/50 text-[9px]'>Enter</span> or comma to add a prop
+      </p>
+    </div>
+  )
+}
+
+function AddComponentsForm() {
+  const [name, setName] = useState("")
+  const [props, setProps] = useState([])
+  const [code, setCode] = useState("")
+  const [codeTab, setCodeTab] = useState("code")
+  const [saving, setSaving] = useState(false)
+  const [publishing, setPublishing] = useState(false)
+  const [savedId, setSavedId] = useState(null)
+  const [isPublished, setIsPublished] = useState(false)
+
+  const handleSave = async () => {
+    if (!name.trim() || !code.trim() || saving) return
+    setSaving(true)
+    try {
+      const res = await axios.post(
+        `${ServerUrl}/api/components/save`,
+        { name, code, props, visibility: "public" },
+        { withCredentials: true }
+      )
+      setSavedId(res.data?._id || "saved")
+      setSaving(false)
+    } catch (err) {
+      console.error(err)
+      setSaving(false)
+    }
+  }
+
+  const handlePublish = async () => {
+    if (!savedId || publishing) return
+    setPublishing(true)
+    try {
+      await axios.post(
+        `${ServerUrl}/api/component/publish`,
+        { componentId: savedId },
+        { withCredentials: true }
+      )
+      setIsPublished(true)
+      setPublishing(false)
+    } catch (err) {
+      console.error(err)
+      setPublishing(false)
+    }
+  }
+
+  return (
+    <div className='px-4 sm:px-6 lg:px-8 py-5 sm:py-6 max-w-3xl w-full mx-auto'>
+      <h2 className='text-base sm:text-lg font-bold mb-1 text-[#f5eff2]' style={{ fontFamily: "'Syne', sans-serif" }}>
+        Add Component
+      </h2>
+      <p className='text-[#f5eff2]/35 text-xs mb-5 sm:mb-6'>
+        Manually add a component — give it a name, define props, paste the code and preview it.
+      </p>
+      <div className='space-y-4 sm:space-y-5'>
+        <div className='p-3.5 sm:p-4 rounded-2xl border border-white/[0.08] bg-[#0c080a] space-y-2'>
+          <label htmlFor="name" className='text-xs font-semibold text-[#f5eff2]/50 uppercase tracking-wider block'>
+            Component Name
+          </label>
+          <input
+            type="text"
+            id='name'
+            onChange={(e) => setName(e.target.value)}
+            value={name}
+            placeholder='e.g. GlassmorphicButton'
+            className='w-full bg-[#170f14] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-[#f5eff2] placeholder-white/20 outline-none focus:border-[#e11d48]/50 transition-colors'
+          />
+        </div>
+        <div className='p-3.5 sm:p-4 rounded-2xl border border-white/[0.08] bg-[#0c080a] space-y-2'>
+          <label className='text-xs font-semibold text-[#f5eff2]/50 uppercase tracking-wider block'>
+            Props
+          </label>
+          <PropsInput props={props} setProps={setProps} />
+        </div>
+        <div className='rounded-2xl border border-white/[0.08] bg-[#0c080a] overflow-hidden'>
+          <div className='flex items-center justify-between px-3.5 sm:px-4 py-3 border-b border-white/[0.06] bg-[#090608]'>
+            <label className='text-xs font-semibold text-[#f5eff2]/50 uppercase tracking-wider'>
+              Component Code
+            </label>
+            <div className='flex gap-1 rounded-xl p-1 bg-white/[0.03] border border-white/[0.05]'>
+              {["code", "preview"].map((tab) => (
+                <button
+                  type='button'
+                  onClick={() => setCodeTab(tab)}
+                  key={tab}
+                  className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize border-none cursor-pointer ${
+                    codeTab === tab
+                      ? "bg-[#1b1015] border border-[#e11d48]/40 text-[#f5eff2] shadow-sm"
+                      : "text-[#f5eff2]/50 hover:text-[#f5eff2] bg-transparent"
+                  }`}
+                >
+                  {tab === 'code' ? (
+                    <TbCodeDots size={12} className={codeTab === tab ? "text-[#f43f5e]" : ""} />
+                  ) : (
+                    <TbEye size={12} className={codeTab === tab ? "text-[#f43f5e]" : ""} />
+                  )}
+                  <span className='hidden xs:inline'>{tab}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <AnimatePresence mode='wait'>
+            {codeTab === "code" ? (
+              <motion.div
+                key='code'
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <textarea
+                  onChange={(e) => setCode(e.target.value)}
+                  value={code}
+                  rows={12}
+                  placeholder={`export default function MyComponent({ title }) {\n  return (\n    <div>\n      <h1>{title}</h1>\n    </div>\n  );\n}`}
+                  className="w-full bg-[#070507] px-4 sm:px-5 py-4 text-xs leading-relaxed text-[#fbcfe8] font-mono resize-none outline-none placeholder-white/10 selection:bg-[#f43f5e]/30 selection:text-white"
+                  style={{ minHeight: 200 }}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key='preview'
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className='p-3.5 sm:p-4 bg-[#070507]'
+              >
+                {code.trim() ? (
+                  <LiveComponentPreview code={code} />
+                ) : (
+                  <div
+                    className='h-36 sm:h-40 flex items-center justify-center text-white/20 text-xs rounded-xl'
+                    style={{ border: "1px dashed rgba(255,255,255,0.08)" }}
+                  >
+                    Paste some code first to see the preview
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <div className='flex items-center gap-2 sm:gap-3 flex-wrap pt-1'>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={handleSave}
+            disabled={saving || !name.trim() || !code.trim() || savedId}
+            className='flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer border'
+            style={{
+              background: savedId ? "rgba(16,185,129,0.12)" : "rgba(255,255,255,0.06)",
+              borderColor: savedId ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.12)",
+              color: savedId ? "#34d399" : "#f5eff2",
+            }}
+          >
+            {saving ? (
+              <motion.span animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
+                <TbLoader size={15} />
+              </motion.span>
+            ) : savedId ? (
+              <TbCheck size={15} />
+            ) : (
+              <TbDeviceFloppy size={15} />
+            )}
+            {saving ? "Saving..." : savedId ? "Saved" : "Save Component"}
+          </motion.button>
+
+          <AnimatePresence>
+            {savedId && !isPublished && (
+              <motion.button
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={handlePublish}
+                disabled={publishing}
+                className='flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-40 transition-all cursor-pointer border border-[#e11d48]/40 text-white shadow-[0_0_20px_rgba(225,29,72,0.25)]'
+                style={{
+                  background: publishing
+                    ? "rgba(225,29,72,0.2)"
+                    : "linear-gradient(135deg, #be123c 0%, #e11d48 50%, #f43f5e 100%)",
+                }}
+              >
+                {publishing ? (
+                  <motion.span animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
+                    <TbLoader size={15} />
+                  </motion.span>
+                ) : (
+                  <TbLoader size={15} />
+                )}
+                {publishing ? "Publishing..." : "Publish to npm"}
+              </motion.button>
+            )}
+
+            {isPublished && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className='flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+              >
+                <TbCheck size={15} /> Published
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
     </div>
   )
 }
@@ -387,6 +661,18 @@ function AdminDashboard() {
                   </div>
                 )}
               </motion.div>
+            </motion.div>
+          )}
+
+          {activeView === "add" && (
+            <motion.div
+              key="add"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.25 }}
+            >
+              <AddComponentsForm />
             </motion.div>
           )}
         </AnimatePresence>

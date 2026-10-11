@@ -90,7 +90,7 @@ function Home() {
     if(userData?.role === "admin"){
       navigate("/admin")
     }
-  }, [userdata])
+  }, [userData])
 
 
   const getLetters = (name) => {
