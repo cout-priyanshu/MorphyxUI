@@ -18,7 +18,20 @@ import {
   TbX,
   TbLoader,
   TbCheck,
+  TbTrash,
 } from "react-icons/tb"
+import {
+  FiZap,
+  FiSave,
+  FiArrowRight,
+  FiAlertCircle,
+  FiCheckCircle,
+  FiCpu,
+  FiLayers,
+  FiArrowLeft,
+  FiRefreshCw,
+  FiPlus,
+} from "react-icons/fi"
 import { ServerUrl } from '../App'
 import { setUserData } from '../redux/userSlice'
 import { useDispatch, useSelector } from 'react-redux'
@@ -98,6 +111,32 @@ function PropsInput({ props = [], setProps }) {
   )
 }
 
+const Toast = ({ message, type, onClose }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 40 }}
+      className='fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.8)] border border-white/10 backdrop-blur-xl'
+      style={{
+        background: type === "success" ? '#14251e' : type === "error" ? "#261014" : "#170f14",
+        color: type === "success" ? "#86efac" : type === "error" ? "#fda4af" : "#f5eff2",
+        minWidth: "240px"
+      }}
+    >
+      {type === "success" ? (
+        <FiCheckCircle size={18} className='text-emerald-400 shrink-0' />
+      ) : (
+        <FiAlertCircle size={18} className='text-[#f43f5e] shrink-0' />
+      )}
+      <p className='text-sm font-medium text-[#f5eff2]'>{message}</p>
+      <button onClick={onClose} className='ml-auto text-white/50 hover:text-white transition-colors cursor-pointer bg-transparent border-none'>
+        <TbX size={18} />
+      </button>
+    </motion.div>
+  )
+}
+
 function AddComponentsForm() {
   const [name, setName] = useState("")
   const [props, setProps] = useState([])
@@ -107,6 +146,12 @@ function AddComponentsForm() {
   const [publishing, setPublishing] = useState(false)
   const [savedId, setSavedId] = useState(null)
   const [isPublished, setIsPublished] = useState(false)
+  const [toast, setToast] = useState(null)
+
+  const showToast = (message, type = "info") => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3500)
+  }
 
   const handleSave = async () => {
     if (!name.trim() || !code.trim() || saving) return
@@ -114,30 +159,38 @@ function AddComponentsForm() {
     try {
       const res = await axios.post(
         `${ServerUrl}/api/components/save`,
-        { name, code, props, visibility: "public" },
+        {
+          name,
+          code,
+          props,
+        },
         { withCredentials: true }
       )
-      setSavedId(res.data?._id || "saved")
+      setSavedId(res.data._id)
+      showToast("Component saved successfully!", "success")
       setSaving(false)
-    } catch (err) {
-      console.error(err)
+    } catch (error) {
+      console.log(error)
+      showToast("Component save error", "error")
       setSaving(false)
     }
   }
 
   const handlePublish = async () => {
-    if (!savedId || publishing) return
+    if (!savedId) return
     setPublishing(true)
     try {
       await axios.post(
-        `${ServerUrl}/api/component/publish`,
+        `${ServerUrl}/api/components/publish`,
         { componentId: savedId },
         { withCredentials: true }
       )
       setIsPublished(true)
+      showToast("Published to npm successfully!", "success")
       setPublishing(false)
-    } catch (err) {
-      console.error(err)
+    } catch (error) {
+      console.log(error)
+      showToast("Publish failed", "error")
       setPublishing(false)
     }
   }
@@ -298,7 +351,34 @@ function AddComponentsForm() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {(savedId || name || code) && (
+            <button
+              onClick={() => {
+                setName("")
+                setProps([])
+                setCode("")
+                setSavedId(null)
+                setIsPublished(false)
+                setCodeTab("code")
+              }}
+              className="ml-auto flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-[#fda4af]/60 hover:text-[#fda4af] hover:bg-[#251014]/50 transition-all bg-transparent border border-transparent hover:border-[#e11d48]/20 cursor-pointer"
+            >
+              <TbTrash size={13} /> Reset
+            </button>
+          )}
         </div>
+
+        {/* Toast Notification */}
+        <AnimatePresence>
+          {toast && (
+            <Toast
+              message={toast.message}
+              type={toast.type}
+              onClose={() => setToast(null)}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )
@@ -412,16 +492,13 @@ function AdminDashboard() {
       className='min-h-screen bg-[#070507] text-[#f5eff2] flex overflow-hidden'
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
-      {/* Background Orbs */}
       <div className='fixed top-[-40px] left-[-40px] w-96 h-96 rounded-full pointer-events-none opacity-[0.06] bg-[#be123c] blur-[150px]' />
       <div className='fixed bottom-[-10%] right-[-5%] w-96 h-96 rounded-full pointer-events-none opacity-[0.05] bg-[#f43f5e] blur-[160px]' />
 
-      {/* Desktop Sidebar */}
       <aside className='hidden md:flex flex-col w-60 min-h-screen fixed top-0 left-0 z-20'>
         <SidebarContent />
       </aside>
 
-      {/* Mobile Drawer */}
       <AnimatePresence>
         {sidebarOpen && (
           <>
@@ -446,9 +523,7 @@ function AdminDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Main Content Area */}
       <main className='flex-1 md:ml-60 min-h-screen overflow-y-auto'>
-        {/* Top Navbar */}
         <div className='sticky top-0 z-10 px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4 bg-[#070507]/80 backdrop-blur-md border-b border-white/[0.05] flex items-center justify-between gap-2'>
           <div className='flex items-center gap-3 min-w-0'>
             <button
@@ -478,7 +553,6 @@ function AdminDashboard() {
           </motion.button>
         </div>
 
-        {/* View Switcher Container */}
         <AnimatePresence mode='wait'>
           {activeView === "dashboard" && (
             <motion.div
@@ -489,7 +563,6 @@ function AdminDashboard() {
               transition={{ duration: 0.25 }}
               className="px-4 sm:px-6 lg:px-8 py-5 sm:py-6 space-y-5 sm:space-y-6"
             >
-              {/* Stats Grid */}
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4'>
                 {stats.map(({ label, value, icon: Icon, color }, i) => (
                   <motion.div
@@ -513,7 +586,6 @@ function AdminDashboard() {
                 ))}
               </div>
 
-              {/* Chart Panel */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -573,7 +645,6 @@ function AdminDashboard() {
                 )}
               </motion.div>
 
-              {/* Public Components List */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
