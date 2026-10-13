@@ -26,7 +26,7 @@ import {
 } from 'react-icons/tb'
 import axios from 'axios'
 import { ServerUrl } from '../App'
-import { setUserData } from '../redux/userSlice'
+import { setAllComponents, setAllUsers, setUserData } from '../redux/userSlice'
 import { useNavigate } from 'react-router-dom'
 
 const features = [
@@ -102,6 +102,9 @@ function Home() {
     try {
       await axios.get(`${ServerUrl}/api/auth/logout`, { withCredentials: true })
       dispatch(setUserData(null))
+      dispatch(setAllUsers([]))
+      dispatch(setAllComponents([]))
+      navigate("/")
     } catch (error) {
       console.log(error)
     }
