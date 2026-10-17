@@ -13,7 +13,7 @@ import Pricing from './pages/Pricing'
 import MyComponents from './pages/MyComponents'
 import Docs from './pages/Docs'
 
-export const ServerUrl = "http://localhost:8000"
+export const ServerUrl = "https://morphyxui.onrender.com"
 
 function App() {
   const dispatch = useDispatch()
