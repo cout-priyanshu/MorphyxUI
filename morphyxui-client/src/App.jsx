@@ -11,6 +11,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import AllComponents from './pages/AllComponents'
 import Pricing from './pages/Pricing'
 import MyComponents from './pages/MyComponents'
+import Docs from './pages/Docs'
 
 export const ServerUrl = "http://localhost:8000"
 
@@ -78,6 +79,7 @@ function App() {
         <Route path='/components' element={<AllComponents/>} />
         <Route path='/pricing' element={<Pricing/>} />
         <Route path='/my-components' element={<MyComponents/>} />
+        <Route path='docs' element={<Docs/>} />
 
       </Routes>
     </div>

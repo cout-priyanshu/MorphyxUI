@@ -7,6 +7,7 @@ import authRouter from "./routes/auth.route.js"
 import cors from "cors"
 import userRouter from "./routes/user.route.js"
 import componentRouter from "./routes/component.route.js"
+import paymentRouter from "./routes/payment.route.js"
 
 
 const app = express()
@@ -25,8 +26,8 @@ app.get("/", (req,res) => {
 app.use("/api/auth", authRouter)
 app.use("/api/user", userRouter)
 app.use("/api/components" , componentRouter)
+app.use("/api/payment", paymentRouter)
 
-app.use("/api/auth", authRouter)
 const PORT = process.env.PORT
 app.listen(PORT, ()=>{
     console.log(`Server Started on port ${PORT}`)

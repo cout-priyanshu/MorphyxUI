@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import {
   TbUsers,
@@ -19,19 +19,16 @@ import {
   TbLoader,
   TbCheck,
   TbTrash,
+  TbHexagonLetterM,
+  TbTerminal2,
+  TbArrowRight,
+  TbRefresh,
+  TbDeviceDesktop,
+  TbDeviceTablet,
+  TbDeviceMobile,
+  TbCpu,
+  TbShieldCheck
 } from "react-icons/tb"
-import {
-  FiZap,
-  FiSave,
-  FiArrowRight,
-  FiAlertCircle,
-  FiCheckCircle,
-  FiCpu,
-  FiLayers,
-  FiArrowLeft,
-  FiRefreshCw,
-  FiPlus,
-} from "react-icons/fi"
 import { ServerUrl } from '../App'
 import { setUserData } from '../redux/userSlice'
 import { useDispatch, useSelector } from 'react-redux'
@@ -39,17 +36,23 @@ import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AreaChart, Area, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { LiveComponentPreview } from '../components/LiveComponentPreview'
+import gsap from 'gsap'
 
+// Architectural Monochromatic Tooltip
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
   return (
-    <div className='bg-[#170f14] border border-[#e11d48]/20 rounded-xl px-3 py-2 text-xs shadow-2xl backdrop-blur-md'>
-      <p className='text-[#f5eff2]/50 mb-1'>{label}</p>
-      <p className='text-[#f43f5e] font-bold'>{payload[0].value} components</p>
+    <div className='bg-[#161616] border border-white/20 px-3.5 py-2.5 shadow-2xl rounded-none font-mono'>
+      <p className='text-[10px] uppercase tracking-widest text-white/50 mb-1'>{label}</p>
+      <p className='text-xs font-bold text-white flex items-center gap-1.5'>
+        <span className='w-1.5 h-1.5 bg-white inline-block' />
+        {payload[0].value} UNITS SYNTHESIZED
+      </p>
     </div>
   )
 }
 
+// Architectural Monospace Props Tag Input
 function PropsInput({ props = [], setProps }) {
   const [input, setInput] = useState("")
   const addProps = () => {
@@ -63,27 +66,29 @@ function PropsInput({ props = [], setProps }) {
 
   return (
     <div>
-      <div className='flex flex-wrap gap-1.5 mb-2 min-h-[28px]'>
+      <div className='flex flex-wrap gap-1.5 mb-2.5 min-h-[30px]'>
         {props.map((p) => (
           <span
             key={p}
-            className='flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#2a171f] text-[#fbcfe8] border border-[#e11d48]/30'
+            className='flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono font-bold bg-[#1e1e1e] text-white border border-white/20 rounded-none'
           >
             {p}
             <button
               type='button'
               onClick={() => removeProps(p)}
-              className='ml-0.5 text-[#fda4af]/70 hover:text-[#fda4af] transition-opacity bg-transparent border-none cursor-pointer p-0 leading-none flex items-center'
+              className='text-white/40 hover:text-white transition-colors bg-transparent border-none cursor-pointer p-0 flex items-center'
             >
-              <TbX size={11} />
+              <TbX size={12} />
             </button>
           </span>
         ))}
         {props.length === 0 && (
-          <span className='text-xs text-white/20 self-center'>No props added yet</span>
+          <span className='text-xs font-mono text-white/30 self-center'>
+            NO PROPS ADDED // PURE PRIMITIVE
+          </span>
         )}
       </div>
-      <div className='flex gap-2'>
+      <div className='flex items-stretch gap-2'>
         <input
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === ",") {
@@ -93,50 +98,57 @@ function PropsInput({ props = [], setProps }) {
           }}
           onChange={(e) => setInput(e.target.value)}
           value={input}
-          placeholder='e.g. "title", "onClick", "children"'
-          className='flex-1 min-w-0 bg-[#170f14] border border-white/10 rounded-xl px-3 py-2 text-sm text-[#f5eff2] placeholder-white/20 outline-none focus:border-[#e11d48]/50 transition-colors'
+          placeholder='e.g. "title", "onClick", "theme"'
+          className='flex-1 min-w-0 bg-[#0a0a0a] border border-white/15 px-3.5 py-2 text-xs font-mono text-white placeholder-white/30 outline-none focus:border-white transition-colors rounded-none'
         />
         <button
           type='button'
           onClick={addProps}
-          className='px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold cursor-pointer transition-all whitespace-nowrap bg-[#2a171f] text-[#fbcfe8] border border-[#e11d48]/30 hover:bg-[#381a27]'
+          className='px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider cursor-pointer transition-colors bg-white text-black hover:bg-neutral-200 border border-white rounded-none'
         >
-          Add
+          Add Prop
         </button>
       </div>
-      <p className='text-[10px] text-white/30 mt-1.5'>
-        Press <span className='px-1.5 py-0.5 rounded bg-white/5 text-white/50 text-[9px]'>Enter</span> or comma to add a prop
+      <p className='text-[10px] font-mono text-white/40 mt-1.5'>
+        PRESS <span className='text-white font-bold'>ENTER</span> OR <span className='text-white font-bold'>COMMA (,)</span> TO REGISTER PROPERTY
       </p>
     </div>
   )
 }
 
+// Sharp Architectural Toast Alert
 const Toast = ({ message, type, onClose }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 40 }}
-      className='fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.8)] border border-white/10 backdrop-blur-xl'
-      style={{
-        background: type === "success" ? '#14251e' : type === "error" ? "#261014" : "#170f14",
-        color: type === "success" ? "#86efac" : type === "error" ? "#fda4af" : "#f5eff2",
-        minWidth: "240px"
-      }}
+      initial={{ opacity: 0, y: -20, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.98 }}
+      className={`fixed top-6 right-6 z-50 flex items-center gap-3.5 px-5 py-3.5 border shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-none ${
+        type === "success"
+          ? "bg-[#111c15] border-emerald-500/40 text-emerald-300"
+          : type === "error"
+          ? "bg-[#201012] border-rose-500/40 text-rose-300"
+          : "bg-[#141414] border-white/20 text-white"
+      }`}
+      style={{ minWidth: "300px" }}
     >
-      {type === "success" ? (
-        <FiCheckCircle size={18} className='text-emerald-400 shrink-0' />
-      ) : (
-        <FiAlertCircle size={18} className='text-[#f43f5e] shrink-0' />
-      )}
-      <p className='text-sm font-medium text-[#f5eff2]'>{message}</p>
-      <button onClick={onClose} className='ml-auto text-white/50 hover:text-white transition-colors cursor-pointer bg-transparent border-none'>
-        <TbX size={18} />
+      <div className={`w-6 h-6 flex items-center justify-center font-bold text-xs rounded-none ${
+        type === "success" ? "bg-emerald-400 text-black" : type === "error" ? "bg-rose-500 text-white" : "bg-white text-black"
+      }`}>
+        {type === "success" ? <TbCheck size={14} /> : <TbX size={14} />}
+      </div>
+      <div className="flex-1 text-left">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-white/40">SYSTEM NOTIFICATION</p>
+        <p className="text-xs font-semibold text-white leading-tight mt-0.5">{message}</p>
+      </div>
+      <button onClick={onClose} className="text-white/40 hover:text-white p-1 transition-colors cursor-pointer bg-transparent border-none rounded-none">
+        <TbX size={16} />
       </button>
     </motion.div>
   )
 }
 
+// Add Component Studio Form
 function AddComponentsForm() {
   const [name, setName] = useState("")
   const [props, setProps] = useState([])
@@ -159,19 +171,15 @@ function AddComponentsForm() {
     try {
       const res = await axios.post(
         `${ServerUrl}/api/components/save`,
-        {
-          name,
-          code,
-          props,
-        },
+        { name, code, props },
         { withCredentials: true }
       )
       setSavedId(res.data._id)
-      showToast("Component saved successfully!", "success")
+      showToast("Component registered in repository", "success")
       setSaving(false)
     } catch (error) {
       console.log(error)
-      showToast("Component save error", "error")
+      showToast("Repository registry error", "error")
       setSaving(false)
     }
   }
@@ -186,27 +194,34 @@ function AddComponentsForm() {
         { withCredentials: true }
       )
       setIsPublished(true)
-      showToast("Published to npm successfully!", "success")
+      showToast("Published to NPM registry package", "success")
       setPublishing(false)
     } catch (error) {
       console.log(error)
-      showToast("Publish failed", "error")
+      showToast("NPM publish failed", "error")
       setPublishing(false)
     }
   }
 
   return (
-    <div className='px-4 sm:px-6 lg:px-8 py-5 sm:py-6 max-w-3xl w-full mx-auto'>
-      <h2 className='text-base sm:text-lg font-bold mb-1 text-[#f5eff2]' style={{ fontFamily: "'Syne', sans-serif" }}>
-        Add Component
-      </h2>
-      <p className='text-[#f5eff2]/35 text-xs mb-5 sm:mb-6'>
-        Manually add a component — give it a name, define props, paste the code and preview it.
-      </p>
-      <div className='space-y-4 sm:space-y-5'>
-        <div className='p-3.5 sm:p-4 rounded-2xl border border-white/[0.08] bg-[#0c080a] space-y-2'>
-          <label htmlFor="name" className='text-xs font-semibold text-[#f5eff2]/50 uppercase tracking-wider block'>
-            Component Name
+    <div className='px-4 sm:px-8 py-8 max-w-4xl w-full mx-auto'>
+      <div className='mb-8 border-b border-white/15 pb-5'>
+        <div className='inline-flex items-center gap-2 px-3 py-1 bg-white/[0.04] border border-white/15 text-[10px] font-mono uppercase tracking-[2px] text-white/60 mb-2 rounded-none'>
+          <TbTerminal2 size={13} /> COMPONENT REGISTRY INTAKE
+        </div>
+        <h2 className='text-2xl sm:text-3xl font-extrabold uppercase tracking-tight text-white' style={{ fontFamily: "'Syne', sans-serif" }}>
+          Register Architecture Unit
+        </h2>
+        <p className='text-white/45 text-xs font-mono mt-1'>
+          Define semantic unit parameters, establish prop interfaces, inspect viewport sandbox, and publish.
+        </p>
+      </div>
+
+      <div className='space-y-6'>
+        {/* Unit Name Box */}
+        <div className='p-5 border border-white/15 bg-[#121212] rounded-none'>
+          <label htmlFor="name" className='text-[10px] font-mono font-bold text-white/60 uppercase tracking-[2px] block mb-2'>
+            COMPONENT IDENTIFIER // NAME
           </label>
           <input
             type="text"
@@ -214,75 +229,63 @@ function AddComponentsForm() {
             onChange={(e) => setName(e.target.value)}
             value={name}
             placeholder='e.g. GlassmorphicButton'
-            className='w-full bg-[#170f14] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-[#f5eff2] placeholder-white/20 outline-none focus:border-[#e11d48]/50 transition-colors'
+            className='w-full bg-[#0a0a0a] border border-white/15 px-4 py-2.5 text-xs sm:text-sm font-mono text-white placeholder-white/30 outline-none focus:border-white transition-colors rounded-none'
           />
         </div>
-        <div className='p-3.5 sm:p-4 rounded-2xl border border-white/[0.08] bg-[#0c080a] space-y-2'>
-          <label className='text-xs font-semibold text-[#f5eff2]/50 uppercase tracking-wider block'>
-            Props
+
+        {/* Props Box */}
+        <div className='p-5 border border-white/15 bg-[#121212] rounded-none'>
+          <label className='text-[10px] font-mono font-bold text-white/60 uppercase tracking-[2px] block mb-2'>
+            PROPERTY SCHEMAS
           </label>
           <PropsInput props={props} setProps={setProps} />
         </div>
-        <div className='rounded-2xl border border-white/[0.08] bg-[#0c080a] overflow-hidden'>
-          <div className='flex items-center justify-between px-3.5 sm:px-4 py-3 border-b border-white/[0.06] bg-[#090608]'>
-            <label className='text-xs font-semibold text-[#f5eff2]/50 uppercase tracking-wider'>
-              Component Code
-            </label>
-            <div className='flex gap-1 rounded-xl p-1 bg-white/[0.03] border border-white/[0.05]'>
+
+        {/* Code & Preview Box */}
+        <div className='border border-white/15 bg-[#121212] rounded-none overflow-hidden'>
+          <div className='flex items-center justify-between px-5 py-3 border-b border-white/10 bg-[#161616]'>
+            <span className='text-[10px] font-mono font-bold text-white/60 uppercase tracking-[2px]'>
+              SOURCE IMPLEMENTATION
+            </span>
+            <div className='flex gap-1 bg-[#0a0a0a] border border-white/15 p-1 rounded-none'>
               {["code", "preview"].map((tab) => (
                 <button
                   type='button'
                   onClick={() => setCodeTab(tab)}
                   key={tab}
-                  className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize border-none cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1 text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer border rounded-none ${
                     codeTab === tab
-                      ? "bg-[#1b1015] border border-[#e11d48]/40 text-[#f5eff2] shadow-sm"
-                      : "text-[#f5eff2]/50 hover:text-[#f5eff2] bg-transparent"
+                      ? "bg-white text-black border-white shadow-sm"
+                      : "bg-transparent text-white/40 border-transparent hover:text-white"
                   }`}
                 >
-                  {tab === 'code' ? (
-                    <TbCodeDots size={12} className={codeTab === tab ? "text-[#f43f5e]" : ""} />
-                  ) : (
-                    <TbEye size={12} className={codeTab === tab ? "text-[#f43f5e]" : ""} />
-                  )}
-                  <span className='hidden xs:inline'>{tab}</span>
+                  {tab === 'code' ? <TbCodeDots size={12} /> : <TbEye size={12} />}
+                  <span>{tab}</span>
                 </button>
               ))}
             </div>
           </div>
+
           <AnimatePresence mode='wait'>
             {codeTab === "code" ? (
-              <motion.div
-                key='code'
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
+              <motion.div key='code' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <textarea
                   onChange={(e) => setCode(e.target.value)}
                   value={code}
-                  rows={12}
-                  placeholder={`export default function MyComponent({ title }) {\n  return (\n    <div>\n      <h1>{title}</h1>\n    </div>\n  );\n}`}
-                  className="w-full bg-[#070507] px-4 sm:px-5 py-4 text-xs leading-relaxed text-[#fbcfe8] font-mono resize-none outline-none placeholder-white/10 selection:bg-[#f43f5e]/30 selection:text-white"
-                  style={{ minHeight: 200 }}
+                  rows={14}
+                  placeholder={`export default function MyComponent({ title }) {\n  return (\n    <div className="p-6 bg-[#111] text-white border border-white/20">\n      <h1>{title}</h1>\n    </div>\n  );\n}`}
+                  className="w-full bg-[#0a0a0a] p-5 text-xs leading-relaxed text-neutral-200 font-mono resize-none outline-none placeholder-white/20 selection:bg-white selection:text-black"
                 />
               </motion.div>
             ) : (
-              <motion.div
-                key='preview'
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className='p-3.5 sm:p-4 bg-[#070507]'
-              >
+              <motion.div key='preview' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='p-6 bg-[#070707] min-h-[300px] flex items-center justify-center'>
                 {code.trim() ? (
-                  <LiveComponentPreview code={code} />
+                  <div className="w-full border border-white/15 bg-[#111111] p-8 shadow-2xl">
+                    <LiveComponentPreview code={code} />
+                  </div>
                 ) : (
-                  <div
-                    className='h-36 sm:h-40 flex items-center justify-center text-white/20 text-xs rounded-xl'
-                    style={{ border: "1px dashed rgba(255,255,255,0.08)" }}
-                  >
-                    Paste some code first to see the preview
+                  <div className='h-40 flex items-center justify-center text-white/30 text-xs font-mono border border-dashed border-white/15 w-full'>
+                    PASTE JSX SOURCE TO ACTIVATE SANDBOX PREVIEW
                   </div>
                 )}
               </motion.div>
@@ -290,67 +293,37 @@ function AddComponentsForm() {
           </AnimatePresence>
         </div>
 
-        <div className='flex items-center gap-2 sm:gap-3 flex-wrap pt-1'>
-          <motion.button
-            whileTap={{ scale: 0.97 }}
+        {/* Actions Bar */}
+        <div className='flex items-center gap-3 flex-wrap pt-2'>
+          <button
             onClick={handleSave}
             disabled={saving || !name.trim() || !code.trim() || savedId}
-            className='flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer border'
-            style={{
-              background: savedId ? "rgba(16,185,129,0.12)" : "rgba(255,255,255,0.06)",
-              borderColor: savedId ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.12)",
-              color: savedId ? "#34d399" : "#f5eff2",
-            }}
+            className={`flex items-center gap-2 px-5 py-3 text-xs font-mono font-bold uppercase tracking-wider transition-all border rounded-none cursor-pointer disabled:cursor-not-allowed ${
+              savedId
+                ? "bg-emerald-950/40 border-emerald-400 text-emerald-300"
+                : "bg-white text-black hover:bg-neutral-200 border-white"
+            }`}
           >
-            {saving ? (
-              <motion.span animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
-                <TbLoader size={15} />
-              </motion.span>
-            ) : savedId ? (
-              <TbCheck size={15} />
-            ) : (
-              <TbDeviceFloppy size={15} />
-            )}
-            {saving ? "Saving..." : savedId ? "Saved" : "Save Component"}
-          </motion.button>
+            {saving ? <TbLoader size={14} className="animate-spin" /> : savedId ? <TbCheck size={14} /> : <TbDeviceFloppy size={14} />}
+            <span>{saving ? "SAVING..." : savedId ? "UNIT STORED" : "SAVE TO REPOSITORY"}</span>
+          </button>
 
-          <AnimatePresence>
-            {savedId && !isPublished && (
-              <motion.button
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -8 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={handlePublish}
-                disabled={publishing}
-                className='flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-40 transition-all cursor-pointer border border-[#e11d48]/40 text-white shadow-[0_0_20px_rgba(225,29,72,0.25)]'
-                style={{
-                  background: publishing
-                    ? "rgba(225,29,72,0.2)"
-                    : "linear-gradient(135deg, #be123c 0%, #e11d48 50%, #f43f5e 100%)",
-                }}
-              >
-                {publishing ? (
-                  <motion.span animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
-                    <TbLoader size={15} />
-                  </motion.span>
-                ) : (
-                  <TbLoader size={15} />
-                )}
-                {publishing ? "Publishing..." : "Publish to npm"}
-              </motion.button>
-            )}
+          {savedId && !isPublished && (
+            <button
+              onClick={handlePublish}
+              disabled={publishing}
+              className="flex items-center gap-2 px-5 py-3 bg-[#262626] hover:bg-neutral-700 text-white border border-white/20 text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer rounded-none disabled:opacity-40"
+            >
+              {publishing ? <TbLoader size={14} className="animate-spin" /> : <TbPackage size={14} />}
+              <span>{publishing ? "PACKAGING..." : "PUBLISH TO NPM"}</span>
+            </button>
+          )}
 
-            {isPublished && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className='flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
-              >
-                <TbCheck size={15} /> Published
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {isPublished && (
+            <div className="flex items-center gap-2 px-4 py-2.5 border border-emerald-400/40 bg-emerald-950/30 text-emerald-300 text-xs font-mono font-bold uppercase rounded-none">
+              <TbCheck size={14} /> PUBLISHED TO NPM
+            </div>
+          )}
 
           {(savedId || name || code) && (
             <button
@@ -362,24 +335,17 @@ function AddComponentsForm() {
                 setIsPublished(false)
                 setCodeTab("code")
               }}
-              className="ml-auto flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-[#fda4af]/60 hover:text-[#fda4af] hover:bg-[#251014]/50 transition-all bg-transparent border border-transparent hover:border-[#e11d48]/20 cursor-pointer"
+              className="ml-auto flex items-center gap-1.5 px-3 py-2 text-xs font-mono uppercase text-white/50 hover:text-white hover:bg-white/5 transition-all bg-transparent border border-white/10 hover:border-white/30 cursor-pointer rounded-none"
             >
-              <TbTrash size={13} /> Reset
+              <TbTrash size={13} /> RESET
             </button>
           )}
         </div>
-
-        {/* Toast Notification */}
-        <AnimatePresence>
-          {toast && (
-            <Toast
-              message={toast.message}
-              type={toast.type}
-              onClose={() => setToast(null)}
-            />
-          )}
-        </AnimatePresence>
       </div>
+
+      <AnimatePresence>
+        {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      </AnimatePresence>
     </div>
   )
 }
@@ -390,6 +356,8 @@ function AdminDashboard() {
   const [activeView, setActiveView] = useState("dashboard")
   const [componentSearch, setComponentSearch] = useState("")
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const containerRef = useRef(null)
+
   const { userData, allUsers, allComponents } = useSelector((s) => s.user)
   const publicComponents = allComponents?.filter((c) => c.visibility === "public") || []
 
@@ -411,6 +379,23 @@ function AdminDashboard() {
     }
   }
 
+  // GSAP Entrance
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".gsap-admin-stat",
+        { y: 25, opacity: 0 },
+        { y: 0, opacity: 1, stagger: 0.08, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" }
+      )
+      gsap.fromTo(
+        ".gsap-admin-panel",
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, stagger: 0.1, duration: 0.6, delay: 0.15, ease: "power3.out", clearProps: "transform,opacity" }
+      )
+    }, containerRef)
+    return () => ctx.revert()
+  }, [activeView])
+
   const chartData = (() => {
     if (!publicComponents.length) return []
     const map = {}
@@ -427,61 +412,97 @@ function AdminDashboard() {
   })()
 
   const stats = [
-    { label: "Total Users", value: allUsers?.length || 0, icon: TbUsers, color: "#f43f5e" },
-    { label: "Components Made", value: publicComponents?.length || 0, icon: TbCode, color: "#fbcfe8" },
+    { label: "REGISTERED OPERATORS", value: allUsers?.length || 0, icon: TbUsers, sub: "AUTHENTICATED DEVS" },
+    { label: "PUBLIC ARCHITECTURE UNITS", value: publicComponents?.length || 0, icon: TbCode, sub: "LIVE READY BLOCKS" },
+    { label: "CORE TELEMETRY STATUS", value: "99.8%", icon: TbShieldCheck, sub: "RUNTIME SEMANTIC" },
+    { label: "ACTIVE NPM PACKAGE", value: "v2.4", icon: TbTerminal2, sub: "TREE-SHAKEABLE" },
   ]
 
   const navItems = [
-    { id: "dashboard", label: "Dashboard", Icon: TbLayoutDashboard },
-    { id: "add", label: "Add Components", Icon: TbPackage },
+    { id: "dashboard", label: "DASHBOARD OVERVIEW", Icon: TbLayoutDashboard },
+    { id: "add", label: "REGISTER COMPONENT", Icon: TbPackage },
   ]
 
   const SidebarContent = () => (
-    <div className='flex flex-col h-full bg-[#0c080a] border-r border-white/[0.06]'>
-      <div className='flex items-center gap-2.5 px-5 py-5 border-b border-white/[0.05]'>
-        <div className='w-8 h-8 rounded-xl bg-gradient-to-tr from-[#be123c] to-[#f43f5e] flex items-center justify-center shadow-[0_0_14px_rgba(244,63,94,0.35)] flex-shrink-0'>
-          <span className='font-black text-white text-sm'>V</span>
+    <div className='flex flex-col h-full bg-[#0d0d0d] border-r border-white/15 text-white select-none'>
+      {/* Brand Header */}
+      <div className='flex items-center gap-3 px-6 py-5 border-b border-white/15'>
+        <div className='w-9 h-9 border border-white/30 bg-white/5 flex items-center justify-center text-white rounded-none'>
+          <TbHexagonLetterM size={20} />
         </div>
         <div>
-          <span className='text-base font-bold block text-[#f5eff2]' style={{ fontFamily: "'Syne', sans-serif" }}>
-            VirtualUI
+          <span className='text-base font-bold uppercase tracking-wider block text-white leading-none' style={{ fontFamily: "'Syne', sans-serif" }}>
+            MorphyxUI
           </span>
-          <span className='text-[10px] text-[#f43f5e] font-semibold tracking-[2px] uppercase'>Admin</span>
+          <span className='text-[9px] font-mono text-white/50 tracking-[2px] uppercase block mt-1'>
+            SYS.ADMIN // CONTROL
+          </span>
         </div>
         <button
           onClick={() => setSidebarOpen(false)}
-          className='ml-auto md:hidden bg-transparent border-none cursor-pointer p-1.5 rounded-lg text-white/40 hover:text-white/70 transition-colors'
+          className='ml-auto md:hidden text-white/40 hover:text-white p-1 rounded-none border border-white/10 bg-transparent'
         >
-          <TbChevronLeft size={18} />
+          <TbChevronLeft size={16} />
         </button>
       </div>
 
-      <nav className='flex-1 px-3 py-4 space-y-1.5'>
+      {/* Navigation */}
+      <nav className='flex-1 p-3 space-y-1.5'>
+        <div className='px-3 pt-3 pb-2 text-[9px] font-mono font-bold text-white/40 uppercase tracking-[2px]'>
+          CORE MODULES
+        </div>
         {navItems.map(({ id, label, Icon }) => {
           const isActive = activeView === id
           return (
             <button
               onClick={() => setActiveView(id)}
               key={id}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer text-left border ${
+              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-none text-xs font-mono font-bold tracking-wider transition-colors cursor-pointer text-left border relative ${
                 isActive
-                  ? "bg-[#1b1015] text-[#fbcfe8] border-[#e11d48]/40 shadow-sm"
-                  : "bg-transparent text-[#f5eff2]/50 border-transparent hover:text-white hover:bg-white/[0.03]"
+                  ? "bg-[#333333] text-white border-white/60 shadow-md"
+                  : "bg-[#141414] text-white/60 border-white/10 hover:border-white/30 hover:bg-[#1a1a1a] hover:text-white"
               }`}
             >
-              <Icon size={16} className={isActive ? "text-[#f43f5e]" : "text-[#f5eff2]/40"} />
-              {label}
+              {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-white" />}
+              <div className="flex items-center gap-2.5">
+                <Icon size={15} className={isActive ? "text-white" : "text-white/40"} />
+                <span>{label}</span>
+              </div>
+              <span className='text-[9px] text-white/30 font-mono'>0{id === "dashboard" ? "1" : "02"}</span>
             </button>
           )
         })}
+
+        <div className='px-3 pt-6 pb-2 text-[9px] font-mono font-bold text-white/40 uppercase tracking-[2px]'>
+          DIRECT LINKS
+        </div>
+        <button
+          onClick={() => navigate("/components")}
+          className="w-full flex items-center justify-between px-3.5 py-2.5 text-xs font-mono text-white/50 hover:text-white hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 cursor-pointer bg-transparent text-left"
+        >
+          <span className="flex items-center gap-2.5"><TbWorld size={14} /> Explorer</span>
+          <span>→</span>
+        </button>
+        <button
+          onClick={() => navigate("/generate")}
+          className="w-full flex items-center justify-between px-3.5 py-2.5 text-xs font-mono text-white/50 hover:text-white hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 cursor-pointer bg-transparent text-left"
+        >
+          <span className="flex items-center gap-2.5"><TbCpu size={14} /> AI Studio</span>
+          <span>→</span>
+        </button>
       </nav>
 
-      <div className='p-3 border-t border-white/[0.05]'>
+      {/* Operator Session Telemetry & Logout */}
+      <div className='p-4 border-t border-white/15 bg-[#111111] space-y-3'>
+        <div className='text-[10px] font-mono text-white/45'>
+          <p className='truncate uppercase'>OPERATOR: {userData?.name || "ROOT_ADMIN"}</p>
+          <p className='text-emerald-400 mt-0.5'>AUTH: LEVEL_01_SUPERUSER</p>
+        </div>
         <button
           onClick={handleLogout}
-          className='w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#fda4af]/70 hover:text-[#fda4af] hover:bg-[#251014]/60 transition-all cursor-pointer bg-transparent border-none text-left'
+          className='w-full flex items-center justify-center gap-2 px-3 py-2 bg-transparent hover:bg-rose-950/30 text-rose-400 border border-rose-500/30 hover:border-rose-500/60 transition-all font-mono text-xs font-bold uppercase tracking-wider cursor-pointer rounded-none'
         >
-          <TbLogout size={16} /> Log Out
+          <TbLogout size={14} /> TERMINATE SESSION
         </button>
       </div>
     </div>
@@ -489,21 +510,24 @@ function AdminDashboard() {
 
   return (
     <div
-      className='min-h-screen bg-[#070507] text-[#f5eff2] flex overflow-hidden'
+      ref={containerRef}
+      className='min-h-screen bg-[#070707] text-white flex overflow-hidden selection:bg-white selection:text-black'
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
-      <div className='fixed top-[-40px] left-[-40px] w-96 h-96 rounded-full pointer-events-none opacity-[0.06] bg-[#be123c] blur-[150px]' />
-      <div className='fixed bottom-[-10%] right-[-5%] w-96 h-96 rounded-full pointer-events-none opacity-[0.05] bg-[#f43f5e] blur-[160px]' />
+      {/* Background Architectural Grid Lines */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:56px_56px] pointer-events-none z-0" />
 
-      <aside className='hidden md:flex flex-col w-60 min-h-screen fixed top-0 left-0 z-20'>
+      {/* Desktop Fixed Architectural Sidebar */}
+      <aside className='hidden md:flex flex-col w-64 min-h-screen fixed top-0 left-0 z-30'>
         <SidebarContent />
       </aside>
 
+      {/* Mobile Drawer */}
       <AnimatePresence>
         {sidebarOpen && (
           <>
             <motion.div
-              className='fixed inset-0 z-30 bg-black/70 backdrop-blur-sm md:hidden'
+              className='fixed inset-0 z-40 bg-black/85 backdrop-blur-sm md:hidden'
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -514,8 +538,8 @@ function AdminDashboard() {
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className='fixed top-0 left-0 z-40 flex flex-col w-64 min-h-screen md:hidden'
+              transition={{ type: "spring", damping: 30, stiffness: 320 }}
+              className='fixed top-0 left-0 z-50 flex flex-col w-72 min-h-screen md:hidden'
             >
               <SidebarContent />
             </motion.aside>
@@ -523,225 +547,220 @@ function AdminDashboard() {
         )}
       </AnimatePresence>
 
-      <main className='flex-1 md:ml-60 min-h-screen overflow-y-auto'>
-        <div className='sticky top-0 z-10 px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4 bg-[#070507]/80 backdrop-blur-md border-b border-white/[0.05] flex items-center justify-between gap-2'>
-          <div className='flex items-center gap-3 min-w-0'>
+      {/* Main Workspace Frame */}
+      <main className='flex-1 md:ml-64 min-h-screen overflow-y-auto relative z-10'>
+        {/* Sticky Topbar */}
+        <div className='sticky top-0 z-20 px-5 sm:px-8 py-4 bg-[#0d0d0d]/95 backdrop-blur-md border-b border-white/15 flex items-center justify-between gap-4'>
+          <div className='flex items-center gap-3.5 min-w-0'>
             <button
               onClick={() => setSidebarOpen(true)}
-              className='md:hidden bg-transparent border-none cursor-pointer p-1.5 rounded-lg text-white/50 hover:text-white/80 hover:bg-white/[0.05] transition-all flex-shrink-0'
+              className='md:hidden bg-[#161616] border border-white/20 p-2 text-white hover:bg-black transition-colors rounded-none cursor-pointer flex-shrink-0'
             >
-              <TbMenu2 size={20} />
+              <TbMenu2 size={18} />
             </button>
             <div className='min-w-0'>
-              <h1 className='text-base sm:text-lg font-bold truncate text-[#f5eff2]'>
-                {activeView === "dashboard" ? "Dashboard" : "Add Components"}
+              <h1 className='text-sm sm:text-base font-bold font-mono uppercase tracking-wider text-white truncate'>
+                {activeView === "dashboard" ? "DASHBOARD TELEMETRY // STATS" : "COMPONENT REGISTRATION DOCK"}
               </h1>
-              <p className='text-[#f5eff2]/35 text-xs truncate'>
-                Welcome back, {userData?.name || "Admin"}
+              <p className='text-white/40 font-mono text-[11px] truncate mt-0.5'>
+                OPERATIONAL SESSION: {userData?.email || "admin@morphyxui.com"}
               </p>
             </div>
           </div>
-          <motion.button
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => navigate("/generate")}
-            className='flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-[#be123c] to-[#e11d48] border border-[#e11d48]/40 hover:opacity-95 transition-all shadow-[0_0_20px_rgba(225,29,72,0.25)] cursor-pointer flex-shrink-0'
-          >
-            <TbPlus size={14} />
-            <span className='hidden sm:inline'>AI Component</span>
-          </motion.button>
+
+          <div className='flex items-center gap-3'>
+            <button
+              onClick={() => navigate("/generate")}
+              className='flex items-center gap-2 px-4 py-2 bg-white text-black hover:bg-neutral-200 font-mono text-xs font-bold uppercase tracking-wider rounded-none cursor-pointer border border-white transition-colors flex-shrink-0 shadow-sm'
+            >
+              <TbPlus size={14} />
+              <span className='hidden sm:inline'>AI STUDIO</span>
+            </button>
+          </div>
         </div>
 
+        {/* Dynamic View Sections */}
         <AnimatePresence mode='wait'>
           {activeView === "dashboard" && (
             <motion.div
               key="dashboard"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
-              className="px-4 sm:px-6 lg:px-8 py-5 sm:py-6 space-y-5 sm:space-y-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="p-5 sm:p-8 space-y-8 max-w-6xl mx-auto"
             >
-              <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4'>
-                {stats.map(({ label, value, icon: Icon, color }, i) => (
-                  <motion.div
+              {/* 4 Metric Telemetry Cards */}
+              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+                {stats.map(({ label, value, icon: Icon, sub }, i) => (
+                  <div
                     key={i}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.08, duration: 0.4 }}
-                    className='p-4 rounded-2xl border border-white/[0.08] bg-[#0c080a] shadow-[0_10px_30px_rgba(0,0,0,0.5)]'
+                    className='gsap-admin-stat p-5 border border-white/15 bg-[#121212] shadow-[0_15px_40px_rgba(0,0,0,0.6)] relative overflow-hidden rounded-none'
                   >
-                    <div className='mb-3'>
-                      <div
-                        className='w-9 h-9 rounded-xl flex items-center justify-center'
-                        style={{ background: `${color}15`, border: `1px solid ${color}30` }}
-                      >
-                        <Icon size={18} style={{ color }} />
+                    <span className="absolute top-2 right-2 text-white/20 font-mono text-[9px] select-none">+ 0{i + 1}</span>
+                    <div className='flex items-center justify-between mb-3'>
+                      <div className='w-8 h-8 border border-white/20 bg-white/5 flex items-center justify-center text-white rounded-none'>
+                        <Icon size={16} />
                       </div>
+                      <span className='text-[9px] font-mono uppercase tracking-widest text-emerald-400'>ONLINE</span>
                     </div>
-                    <p className='text-2xl font-bold text-[#f5eff2]'>{value.toLocaleString()}</p>
-                    <p className='text-[#f5eff2]/40 text-xs mt-0.5'>{label}</p>
-                  </motion.div>
+                    <p className='text-3xl font-bold text-white tracking-tight' style={{ fontFamily: "'Syne', sans-serif" }}>
+                      {value}
+                    </p>
+                    <p className='text-[10px] font-mono text-white/60 uppercase tracking-[1.5px] mt-1'>{label}</p>
+                    <p className='text-[9px] font-mono text-white/35 mt-0.5'>{sub}</p>
+                  </div>
                 ))}
               </div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                className='p-4 sm:p-5 rounded-2xl border border-white/[0.08] bg-[#0c080a] shadow-[0_10px_30px_rgba(0,0,0,0.5)]'
-              >
-                <div className='flex items-start sm:items-center justify-between mb-4 sm:mb-5 gap-2'>
+              {/* Chart Panel */}
+              <div className='gsap-admin-panel border border-white/15 bg-[#121212] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.7)] rounded-none relative'>
+                <span className="absolute top-2 left-2 text-white/20 font-mono text-[9px] select-none">+ GRAPH.TELEMETRY</span>
+                <span className="absolute top-2 right-2 text-white/20 font-mono text-[9px] select-none">UTC INTERVAL</span>
+
+                <div className='flex items-center justify-between mb-6 pt-3 border-b border-white/10 pb-3 flex-wrap gap-2'>
                   <div>
-                    <h3 className='text-sm font-semibold text-[#f5eff2]'>Component Generation Trends</h3>
-                    <p className='text-[#f5eff2]/40 text-xs mt-0.5'>Date-wise breakdown</p>
+                    <h3 className='text-xs sm:text-sm font-bold uppercase tracking-wider text-white font-mono'>
+                      COMPONENT GENERATION FREQUENCY
+                    </h3>
+                    <p className='text-white/40 text-[11px] font-mono mt-0.5'>Date-wise synthesis telemetry</p>
                   </div>
-                  <span className='text-[10px] font-semibold px-2.5 py-1 rounded-full bg-[#2a171f] border border-[#e11d48]/30 text-[#fbcfe8] flex-shrink-0'>
-                    Last 12 records
+                  <span className='text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 bg-white/10 border border-white/20 text-white'>
+                    LAST 12 RECORDS
                   </span>
                 </div>
 
                 {chartData?.length === 0 ? (
-                  <div className='h-[180px] sm:h-[220px] flex items-center justify-center text-[#f5eff2]/20 text-sm'>
-                    No public components created yet
+                  <div className='h-[210px] flex items-center justify-center text-white/30 text-xs font-mono border border-dashed border-white/10'>
+                    NO PUBLIC RECORD TELEMETRY CAPTURED YET
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={210}>
-                    <AreaChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -25 }}>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <AreaChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: -25 }}>
                       <defs>
-                        <linearGradient id="componentGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor='#f43f5e' stopOpacity={0.35} />
-                          <stop offset="100%" stopColor='#f43f5e' stopOpacity={0} />
+                        <linearGradient id="monochromeGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor='#ffffff' stopOpacity={0.25} />
+                          <stop offset="100%" stopColor='#ffffff' stopOpacity={0.0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                       <XAxis
                         dataKey='date'
-                        tick={{ fill: "rgba(245,239,242,0.4)", fontSize: 10 }}
+                        tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 10, fontFamily: "monospace" }}
                         axisLine={false}
                         tickLine={false}
-                        interval="preserveStartEnd"
                       />
                       <YAxis
-                        tick={{ fill: "rgba(245,239,242,0.4)", fontSize: 10 }}
+                        tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 10, fontFamily: "monospace" }}
                         axisLine={false}
                         tickLine={false}
                         allowDecimals={false}
-                        width={30}
                       />
-                      <Tooltip content={<CustomTooltip />} cursor={{ stroke: "rgba(244,63,94,0.2)" }} />
+                      <Tooltip content={<CustomTooltip />} cursor={{ stroke: "rgba(255,255,255,0.3)" }} />
                       <Area
                         type="monotone"
                         dataKey="components"
-                        stroke="#f43f5e"
+                        stroke="#ffffff"
                         strokeWidth={2}
-                        fill="url(#componentGradient)"
+                        fill="url(#monochromeGrad)"
                         dot={false}
-                        activeDot={{ r: 4, fill: "#f43f5e", strokeWidth: 0 }}
+                        activeDot={{ r: 4, fill: "#ffffff", strokeWidth: 0 }}
                       />
                     </AreaChart>
                   </ResponsiveContainer>
                 )}
-              </motion.div>
+              </div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-                className='rounded-2xl border border-white/[0.08] bg-[#0c080a] shadow-[0_10px_30px_rgba(0,0,0,0.5)] overflow-hidden'
-              >
-                <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-4 border-b border-white/[0.06]'>
-                  <div className='flex items-center gap-2.5'>
-                    <div className='w-7 h-7 rounded-lg flex items-center justify-center bg-[#2a171f] border border-[#e11d48]/30'>
-                      <TbWorld size={14} className='text-[#f43f5e]' />
-                    </div>
-                    <div>
-                      <p className='font-semibold text-sm text-[#f5eff2]'>Public Components</p>
-                      <p className='text-[#f5eff2]/40 text-[11px]'>
-                        {publicComponents.length} components visible to all users
-                      </p>
-                    </div>
+              {/* Public Components Registry Table */}
+              <div className='gsap-admin-panel border border-white/15 bg-[#121212] shadow-[0_20px_50px_rgba(0,0,0,0.7)] rounded-none overflow-hidden'>
+                <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border-b border-white/15 bg-[#161616]'>
+                  <div>
+                    <h3 className='text-xs sm:text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2'>
+                      <TbWorld size={16} /> LIVE PUBLIC ARCHITECTURE BLOCKS
+                    </h3>
+                    <p className='text-white/40 text-[11px] font-mono mt-0.5'>
+                      {publicComponents.length} verified units accessible in open registry
+                    </p>
                   </div>
 
-                  <div className='relative w-full sm:w-56'>
-                    <TbSearch size={14} className='absolute left-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none' />
+                  <div className='relative w-full sm:w-64'>
+                    <TbSearch size={14} className='absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none' />
                     <input
                       value={componentSearch}
                       onChange={(e) => setComponentSearch(e.target.value)}
-                      placeholder='Search components...'
-                      className='w-full bg-[#170f14] border border-white/10 rounded-xl pl-8 pr-3 py-2 text-xs text-[#f5eff2] placeholder-white/20 outline-none focus:border-[#e11d48]/50 transition-colors'
+                      placeholder='SEARCH IDENTIFIERS...'
+                      className='w-full bg-[#0a0a0a] border border-white/20 pl-8 pr-3 py-2 text-xs font-mono text-white placeholder-white/30 outline-none focus:border-white transition-colors rounded-none uppercase tracking-wider'
                     />
                   </div>
                 </div>
 
                 {filteredPublicComponents.length === 0 ? (
-                  <div className='flex flex-col items-center justify-center py-14 gap-3 text-white/20'>
+                  <div className='flex flex-col items-center justify-center py-16 gap-2 text-white/30 font-mono'>
                     <TbBoxOff size={32} />
-                    <p className='text-sm'>
-                      {componentSearch ? "No components match your search" : "No public components yet"}
+                    <p className='text-xs uppercase tracking-wider'>
+                      {componentSearch ? "NO UNITS MATCH QUERY" : "REGISTRY IS EMPTY"}
                     </p>
                   </div>
                 ) : (
-                  <div className='divide-y divide-white/[0.04]'>
+                  <div className='divide-y divide-white/10'>
                     {filteredPublicComponents.map((c, i) => (
-                      <motion.div
+                      <div
                         key={i}
-                        className='flex items-start sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 hover:bg-white/[0.02] transition-colors'
+                        className='flex items-start sm:items-center justify-between gap-4 p-4 sm:p-5 hover:bg-white/[0.02] transition-colors'
                       >
-                        <div className='flex items-center gap-3 min-w-0'>
-                          <div className='w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#2a171f]/60 border border-[#e11d48]/20'>
-                            <TbCode size={14} className='text-[#f43f5e]' />
+                        <div className='flex items-center gap-3.5 min-w-0'>
+                          <div className='w-8 h-8 border border-white/20 bg-white/5 flex items-center justify-center text-white rounded-none flex-shrink-0'>
+                            <TbCode size={15} />
                           </div>
                           <div className='min-w-0'>
-                            <p className='text-sm font-semibold text-[#f5eff2] truncate'>{c.name || "Untitled Component"}</p>
+                            <p className='text-xs sm:text-sm font-bold uppercase tracking-wide text-white truncate font-mono'>
+                              {c.name || "UNNAMED_BLOCK"}
+                            </p>
                             <div className='flex flex-wrap gap-1 mt-1'>
                               {c.props?.slice(0, 4).map((p) => (
                                 <span
                                   key={p}
-                                  className='px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-[#2a171f] border border-[#e11d48]/20 text-[#fda4af]'
+                                  className='px-1.5 py-0.5 text-[9px] font-mono font-bold bg-[#1a1a1a] border border-white/15 text-neutral-300 rounded-none'
                                 >
                                   {p}
                                 </span>
                               ))}
                               {c.props?.length > 4 && (
-                                <span className='px-1.5 py-0.5 rounded-md text-[10px] text-white/30'>
-                                  +{c.props.length - 4} more
+                                <span className='px-1.5 py-0.5 text-[9px] font-mono text-white/40'>
+                                  +{c.props.length - 4} MORE
                                 </span>
                               )}
                             </div>
                           </div>
                         </div>
 
-                        <div className='flex flex-col sm:flex-row items-end sm:items-center gap-2 flex-shrink-0'>
-                          <span className='text-[11px] text-white/30 whitespace-nowrap'>
+                        <div className='flex flex-col sm:flex-row items-end sm:items-center gap-3 flex-shrink-0 font-mono'>
+                          <span className='text-[10px] text-white/40'>
                             {c.createdAt
                               ? new Date(c.createdAt).toLocaleDateString("en-US", {
                                   month: "short",
                                   day: "numeric",
                                   year: "numeric",
                                 })
-                              : "Recent"}
+                              : "SYSTEM INIT"}
                           </span>
-                          <span className='flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#2a171f] text-[#fbcfe8] border border-[#e11d48]/30'>
-                            <TbWorld size={10} className='text-[#f43f5e]' /> Public
+                          <span className='flex items-center gap-1.5 px-2.5 py-1 text-[9px] font-mono font-bold uppercase bg-white text-black rounded-none'>
+                            <TbWorld size={11} /> PUBLIC
                           </span>
                         </div>
-                      </motion.div>
+                      </div>
                     ))}
                   </div>
                 )}
-              </motion.div>
+              </div>
             </motion.div>
           )}
 
           {activeView === "add" && (
             <motion.div
               key="add"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.25 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
             >
               <AddComponentsForm />
             </motion.div>
