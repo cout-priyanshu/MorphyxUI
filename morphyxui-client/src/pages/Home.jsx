@@ -107,7 +107,7 @@ function Home() {
     return () => clearInterval(interval)
   }, [stripPaused])
 
-  // GSAP Setup (Adaptive animations that clear nicely on mobile triggers)
+  // GSAP Setup
   useEffect(() => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline()
@@ -288,12 +288,17 @@ function Home() {
         
         {/* Dramatic Architectural Background */}
         <div className="absolute inset-0 z-0 pointer-events-none select-none">
+          {/* 1. Background Image */}
           <div 
-            className="absolute inset-0 bg-cover bg-center grayscale contrast-125 opacity-35 scale-105"
-            style={{ backgroundImage: `url('/bg.jpeg')` }}
+            className="absolute inset-0 bg-cover bg-center grayscale contrast-135 opacity-70 scale-105"
+            style={{ backgroundImage: `url('/new2.jpeg')` }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/45 to-[#0d0d0d]" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:56px_56px]" />
+
+          {/* 2. Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/20 to-[#0d0d0d]" />
+
+          {/* 3. Subtle Grid Overlay */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:56px_56px]" /> 
         </div>
 
         {/* Top Navigation & Core Headers Container */}
@@ -430,7 +435,7 @@ function Home() {
                 <TbBrandGithub size={15} />
               </a>
 
-              {/* Mobile Mobile Open Trigger Toggle */}
+              {/* Mobile Open Trigger Toggle */}
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="md:hidden text-white/80 hover:text-white bg-transparent border-none cursor-pointer flex items-center justify-center shrink-0 p-1"
@@ -438,7 +443,6 @@ function Home() {
               >
                 {menuOpen ? <TbX size={20} /> : <TbMenu2 size={20} />}
               </button>
-
             </div>
           </div>
 
@@ -476,146 +480,42 @@ function Home() {
             ))}
           </nav>
 
-          {/* Fully Responsive Flyout Drawer Overlay (No more absolute overlaps on phone) */}
-          <AnimatePresence>
-            {menuOpen && (
-              <>
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.5 }}
-                  exit={{ opacity: 0 }}
-                  onClick={() => setMenuOpen(false)}
-                  className="fixed inset-0 z-40 bg-black md:hidden"
-                />
-                <motion.div
-                  initial={{ x: "100%" }}
-                  animate={{ x: 0 }}
-                  exit={{ x: "100%" }}
-                  transition={{ type: "spring", stiffness: 380, damping: 38 }}
-                  className="fixed top-0 right-0 bottom-0 z-50 w-[270px] sm:w-[320px] bg-[#0f0f0f] border-l border-white/10 p-6 flex flex-col justify-between overflow-y-auto md:hidden text-left"
-                >
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between pb-4 border-b border-white/10">
-                      <span className="text-xs font-mono tracking-widest text-white/50 uppercase">NAVIGATION</span>
-                      <button 
-                        onClick={() => setMenuOpen(false)} 
-                        className="text-white/65 hover:text-white p-1 border border-white/10 bg-transparent cursor-pointer"
-                      >
-                        <TbX size={15} />
-                      </button>
-                    </div>
+          {/* Center Hero Title & Dynamic Spacers */}
+          <div className="relative z-20 max-w-4xl mx-auto px-4 text-center my-auto pt-16 pb-28 md:pb-32">
+            <p className="gsap-hero-text text-[10px] sm:text-xs tracking-[5px] sm:tracking-[7px] uppercase text-white/60 font-light mb-3">
+              PROMPT ANY INTERFACE
+            </p>
 
-                    <div className="flex flex-col gap-3 font-mono">
-                      {[
-                        { label: "COMPONENTS LIBRARY", path: "/components" },
-                        { label: "AI JSX GENERATOR", action: handleGenerateClick },
-                        { label: "DOCUMENTATION", path: "/docs" },
-                        { label: "PRICING PLANS", path: "/pricing" }
-                      ].map((item, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            setMenuOpen(false)
-                            if (item.action) item.action()
-                            else if (item.path) navigate(item.path)
-                          }}
-                          className="text-left py-2.5 px-3 bg-white/[0.02] hover:bg-white/10 text-xs font-bold uppercase tracking-wider text-white/80 hover:text-white transition-all border border-white/5 hover:border-white/20 rounded-none cursor-pointer"
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="border-t border-white/10 pt-4 space-y-3.5 text-left">
-                      <span className="text-[10px] font-mono text-white/35 uppercase tracking-wider block">Local Registry Setup</span>
-                      <div className="flex items-center justify-between bg-white/[0.02] border border-white/10 px-3 py-2.5">
-                        <span className="text-[11px] font-mono text-white/60 truncate">npm i morphyx-ui</span>
-                        <button
-                          onClick={handleCopy}
-                          className="text-[10px] font-bold uppercase font-mono bg-white text-black px-2 py-0.5 rounded-none cursor-pointer border-none shrink-0 ml-2"
-                        >
-                          {copied ? "COPIED" : "COPY"}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-white/10 pt-4 mt-8 text-left">
-                    {userData ? (
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-6.5 h-6.5 bg-white text-black text-xs font-bold flex items-center justify-center shrink-0">
-                            {getLetters(userData.name)}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs font-bold text-white truncate">{userData.name}</p>
-                            <p className="text-[9px] text-white/40 font-mono truncate">{userData.email}</p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => { setMenuOpen(false); navigate('/my-components'); }}
-                          className="w-full text-center py-2 bg-white/5 border border-white/15 text-[10px] font-bold uppercase text-white/95 hover:bg-white/10 transition-all rounded-none cursor-pointer font-mono"
-                        >
-                          WORKSPACE
-                        </button>
-                        <button
-                          onClick={() => { handleLogout(); setMenuOpen(false); }}
-                          className="w-full text-center py-2 bg-transparent text-rose-400 border border-rose-500/20 text-[10px] font-bold uppercase hover:bg-rose-950/20 hover:border-rose-500/40 transition-all rounded-none cursor-pointer font-mono"
-                        >
-                          LOGOUT
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => { setShowAuth(true); setMenuOpen(false); }}
-                        className="w-full bg-white hover:bg-neutral-200 text-black py-3 text-xs font-bold uppercase tracking-widest border-none cursor-pointer rounded-none font-mono flex items-center justify-center gap-1.5"
-                      >
-                        <HiSparkles size={14} /> SIGN IN / CLAIM CREDITS
-                      </button>
-                    )}
-                  </div>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Center Hero Title & Dynamic Spacers */}
-        <div className="relative z-20 max-w-4xl mx-auto px-4 text-center my-auto pt-16 pb-28 md:pb-32">
-          <p className="gsap-hero-text text-[10px] sm:text-xs tracking-[5px] sm:tracking-[7px] uppercase text-white/60 font-light mb-3">
-            PROMPT ANY INTERFACE
-          </p>
-
-          <h1 
-            className="gsap-hero-text text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight uppercase leading-[1.1] mb-6 md:mb-8"
-            style={{ fontFamily: "'Syne', sans-serif" }}
-          >
-            {/* First Segment */}
-            <span className="text-white drop-shadow-[0_4px_16px_rgba(255,255,255,0.12)] block sm:inline">
-              SHIP CLEAN{" "}
-            </span>
-            {/* Second Segment */}
-            <span className="relative inline-block mt-1 sm:mt-0">
-              <span 
-                className="text-transparent bg-clip-text bg-gradient-to-r from-neutral-200 via-neutral-400 to-neutral-600"
-                style={{ WebkitTextStroke: "1px rgba(255,255,255,0.3)" }}
-              >
-                REACT UIs
-              </span>
-              <span className="block h-[1.5px] w-full bg-gradient-to-r from-white/70 via-white/20 to-transparent mt-0.5 md:mt-1" />
-            </span>
-          </h1>
-
-          <div className="gsap-hero-text flex flex-wrap items-center justify-center gap-3.5">
-            <button
-              onClick={handleGenerateClick}
-              className="px-7 sm:px-9 py-3 sm:py-3.5 rounded-full bg-white text-[#111] hover:bg-neutral-200 font-bold text-xs tracking-[2px] uppercase transition-colors shadow-[0_10px_25px_rgba(0,0,0,0.5)] cursor-pointer border-none"
+            <h1 
+              className="gsap-hero-text text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight uppercase leading-[1.1] mb-6 md:mb-8"
+              style={{ fontFamily: "'Syne', sans-serif" }}
             >
-              GENERATE ?
-            </button>
+              <span className="text-white drop-shadow-[0_4px_16px_rgba(255,255,255,0.12)] block sm:inline">
+                SHIP CLEAN{" "}
+              </span>
+              <span className="relative inline-block mt-1 sm:mt-0">
+                <span 
+                  className="text-transparent bg-clip-text bg-gradient-to-r from-neutral-200 via-neutral-400 to-neutral-600"
+                  style={{ WebkitTextStroke: "1px rgba(255,255,255,0.3)" }}
+                >
+                  REACT UIs
+                </span>
+                <span className="block h-[1.5px] w-full bg-gradient-to-r from-white/70 via-white/20 to-transparent mt-0.5 md:mt-1" />
+              </span>
+            </h1>
           </div>
-        </div>
-      </header>
+
+          {/* Generate Action Button (Clearly Visible Medium-Dark) */}
+         <div className="gsap-hero-text flex flex-wrap items-center justify-center gap-3.5">
+           <button
+            onClick={handleGenerateClick}
+            className="px-5 py-2 sm:py-2.5 rounded-full bg-neutral-700 hover:bg-neutral-600 text-white border border-white/40 hover:border-white/70 font-semibold text-[11px] sm:text-xs tracking-wider uppercase transition-all shadow-[0_8px_20px_rgba(0,0,0,0.6)] cursor-pointer"
+           >
+            GENERATE ?
+           </button>
+         </div>
+           </div>
+     </header>
 
       {/* =====================================================================
           2. OVERLAPPING 5-COLUMN INTERACTIVE SERVICE STRIP
@@ -623,7 +523,7 @@ function Home() {
       ====================================================================== */}
       <section 
         id="sandbox-section" 
-        className="gsap-strip-wrapper relative z-30 max-w-5xl mx-auto px-4 sm:px-6 -mt-14 md:-mt-20"
+        className="gsap-strip-wrapper relative z-20 max-w-5xl mx-auto px-4 sm:px-6 -mt-14 md:-mt-20"
         onMouseEnter={() => setStripPaused(true)}
         onMouseLeave={() => setStripPaused(false)}
       >
@@ -637,7 +537,7 @@ function Home() {
                 onClick={() => setActiveTab(pillar.id)}
                 className={`group relative flex flex-col items-center justify-center text-center px-4 py-6 md:py-8 cursor-pointer select-none transition-all duration-300 snap-center shrink-0 w-[150px] md:w-auto ${
                   isActive
-                    ? "bg-[#333333] text-white md:-translate-y-2 z-20 shadow-[0_15px_30px_rgba(0,0,0,0.25)] border-b-2 border-white md:border-b-0"
+                    ? "bg-[#333333] text-white md:-translate-y-2 z-10 shadow-[0_15px_30px_rgba(0,0,0,0.25)] border-b-2 border-white md:border-b-0"
                     : "bg-white text-[#222] hover:bg-neutral-50 border-r border-neutral-200/80 last:border-r-0"
                 }`}
               >
@@ -719,7 +619,6 @@ function Home() {
 
           {/* Timeline Stack Navigation Component */}
           <div className="max-w-xl mx-auto mt-6 md:mt-10 relative">
-            {/* Timeline connectors (Hidden on tiny viewports) */}
             <div className="hidden md:block absolute left-[16%] right-[16%] bottom-[5px] h-[1px] bg-neutral-200 z-0" />
 
             <div className="grid grid-cols-3 gap-2 sm:gap-4 relative z-10">
@@ -757,7 +656,7 @@ function Home() {
         {/* Dynamic Sandbox Display Section Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 items-center mt-8 sm:mt-12">
           
-          {/* Overlapping Showcase Blueprint Box (Absolute layering hidden on smallest mobile to prevent crunch) */}
+          {/* Overlapping Showcase Blueprint Box */}
           <div className="lg:col-span-6 relative pl-0 sm:pl-8 pt-0 sm:pt-6 pb-2 text-left">
             <div className="hidden sm:block gsap-stacked-card absolute left-0 top-12 bottom-6 w-[85%] bg-[#1f1f1f] rounded-none shadow-lg" />
             <div className="hidden sm:block gsap-stacked-card absolute left-4 sm:left-5 top-0 w-[75%] h-48 bg-[#999999] rounded-none shadow-md" />
@@ -890,7 +789,6 @@ function Home() {
           4. "UI ENGINE WITH A DIFFERENCE. INNOVATION."
       ====================================================================== */}
       <section className="gsap-diff-section bg-[#f5f5f5] py-14 sm:py-20 lg:py-24 border-t border-b border-neutral-300/80 relative overflow-hidden">
-        {/* Subtle Architectural Blueprint Grid Lines */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000006_1px,transparent_1px),linear-gradient(to_bottom,#00000006_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none" />
 
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6">
@@ -932,7 +830,6 @@ function Home() {
                   </p>
                 </div>
 
-                {/* Micro Technical Spec Details */}
                 <div className="py-3.5 border-y border-neutral-150 space-y-2 text-[9.5px] sm:text-[10px] font-mono text-neutral-500">
                   <div className="flex items-center justify-between">
                     <span>PARADIGM</span>
@@ -980,7 +877,6 @@ function Home() {
                     <span className="text-[9px] font-mono text-neutral-400">CLI & NPM</span>
                   </div>
 
-                  {/* Adaptive Image Container to guarantee zero distortion */}
                   <div className="relative h-40 sm:h-44 w-full overflow-hidden bg-black border border-neutral-200 mb-4.5 rounded-none">
                     <img 
                       src="/img1.jpeg" 
@@ -1030,7 +926,6 @@ function Home() {
                     <span className="text-[9px] font-mono text-neutral-400">PROMPT ENGINE</span>
                   </div>
 
-                  {/* Adaptive Image Container */}
                   <div className="relative h-40 sm:h-44 w-full overflow-hidden bg-black border border-neutral-200 mb-4.5 rounded-none">
                     <img 
                       src="/img2.jpeg" 
@@ -1126,7 +1021,6 @@ function Home() {
                   onClick={() => navigate('/components')}
                   className="gsap-wireframe-card group relative border border-white/15 hover:border-white/50 p-6 pt-8 transition-colors cursor-pointer bg-[#181818]/45 text-left rounded-none"
                 >
-                  {/* Visual Indicator icons on border */}
                   <div className="absolute -top-4.5 left-4 sm:left-5 bg-[#171717] px-2 text-white/80 group-hover:text-white transition-colors">
                     <Icon size={24} strokeWidth={1.2} />
                   </div>
@@ -1149,13 +1043,10 @@ function Home() {
           6. "WANT TO CREATE SOMETHING CRAZY?" (PRE-FOOTER BANNER & 3D QUANTUM)
       ====================================================================== */}
       <section className="gsap-cta-section relative bg-gradient-to-b from-[#0e0e0e] to-[#0a0a0a] py-14 sm:py-20 lg:py-24 px-4 sm:px-6 overflow-hidden">
-        
-        {/* Subtle Grid backdrop */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:56px_56px] pointer-events-none" />
 
         <div className="gsap-cta-banner relative z-10 max-w-5xl mx-auto border border-white/15 bg-[#111111]/90 backdrop-blur-md shadow-[0_20px_55px_rgba(0,0,0,0.8)] rounded-none overflow-hidden">
           
-          {/* Status Telemetry Banner Title Block */}
           <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10 bg-white/[0.02] text-[9px] sm:text-[10px] font-mono uppercase tracking-[1.5px] sm:tracking-[2px] text-white/45 gap-2">
             <span className="flex items-center gap-1.5 truncate">
               <span className="w-1.5 h-1.5 bg-white inline-block shrink-0" />
@@ -1164,10 +1055,8 @@ function Home() {
             <span className="hidden sm:inline shrink-0">ORIENTATION: TILTED // 60FPS</span>
           </div>
 
-          {/* Grid stack */}
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center">
             
-            {/* Action panel */}
             <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/10 text-left">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 border border-white/15 bg-white/[0.02] text-[9.5px] font-mono uppercase tracking-widest text-white/60 mb-4 sm:mb-5">
                 <HiSparkles size={11} /> High-Velocity Workspace
@@ -1187,7 +1076,6 @@ function Home() {
                 Drop heavy bloat frameworks. Customize properties live inside our interactive sandbox and drop components directly into your React directories.
               </p>
 
-              {/* Action trigger hooks */}
               <div className="flex flex-wrap items-stretch gap-3">
                 <button
                   onClick={() => navigate('/components')}
@@ -1206,9 +1094,7 @@ function Home() {
               </div>
             </div>
 
-            {/* Inverted Hex Pyramid Tilted 3D Quantum Space (Scale down containment to avoid Mobile Overflow) */}
             <div className="lg:col-span-5 p-6 sm:p-8 flex items-center justify-center relative min-h-[250px] sm:min-h-[300px] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05)_0%,transparent_65%)]">
-              
               <span className="absolute top-2.5 left-2.5 text-white/20 font-mono text-xs select-none">+</span>
               <span className="absolute top-2.5 right-2.5 text-white/20 font-mono text-xs select-none">+</span>
               <span className="absolute bottom-2.5 left-2.5 text-white/20 font-mono text-xs select-none">+</span>
@@ -1489,6 +1375,111 @@ function Home() {
           </div>
         </div>
       </footer>
+
+      {/* =====================================================================
+          MOBILE DRAWER OVERLAY (ROOT-LEVEL: Z-[70] & Z-[80] FOR PROPER STACKING)
+      ====================================================================== */}
+      <AnimatePresence>
+        {menuOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMenuOpen(false)}
+              className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-xs md:hidden"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 380, damping: 38 }}
+              className="fixed top-0 right-0 bottom-0 z-[80] w-[270px] sm:w-[320px] bg-[#0f0f0f] border-l border-white/10 p-6 flex flex-col justify-between overflow-y-auto md:hidden text-left shadow-2xl"
+            >
+              <div className="space-y-6">
+                <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                  <span className="text-xs font-mono tracking-widest text-white/50 uppercase">NAVIGATION</span>
+                  <button 
+                    onClick={() => setMenuOpen(false)} 
+                    className="text-white/65 hover:text-white p-1 border border-white/10 bg-transparent cursor-pointer"
+                  >
+                    <TbX size={15} />
+                  </button>
+                </div>
+
+                <div className="flex flex-col gap-3 font-mono">
+                  {[
+                    { label: "COMPONENTS LIBRARY", path: "/components" },
+                    { label: "AI JSX GENERATOR", action: handleGenerateClick },
+                    { label: "DOCUMENTATION", path: "/docs" },
+                    { label: "PRICING PLANS", path: "/pricing" }
+                  ].map((item, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setMenuOpen(false)
+                        if (item.action) item.action()
+                        else if (item.path) navigate(item.path)
+                      }}
+                      className="text-left py-2.5 px-3 bg-white/[0.02] hover:bg-white/10 text-xs font-bold uppercase tracking-wider text-white/80 hover:text-white transition-all border border-white/5 hover:border-white/20 rounded-none cursor-pointer"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="border-t border-white/10 pt-4 space-y-3.5 text-left">
+                  <span className="text-[10px] font-mono text-white/35 uppercase tracking-wider block">Local Registry Setup</span>
+                  <div className="flex items-center justify-between bg-white/[0.02] border border-white/10 px-3 py-2.5">
+                    <span className="text-[11px] font-mono text-white/60 truncate">npm i morphyx-ui</span>
+                    <button
+                      onClick={handleCopy}
+                      className="text-[10px] font-bold uppercase font-mono bg-white text-black px-2 py-0.5 rounded-none cursor-pointer border-none shrink-0 ml-2"
+                    >
+                      {copied ? "COPIED" : "COPY"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-white/10 pt-4 mt-8 text-left">
+                {userData ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-6.5 h-6.5 bg-white text-black text-xs font-bold flex items-center justify-center shrink-0">
+                        {getLetters(userData.name)}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-white truncate">{userData.name}</p>
+                        <p className="text-[9px] text-white/40 font-mono truncate">{userData.email}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { setMenuOpen(false); navigate('/my-components'); }}
+                      className="w-full text-center py-2 bg-white/5 border border-white/15 text-[10px] font-bold uppercase text-white/95 hover:bg-white/10 transition-all rounded-none cursor-pointer font-mono"
+                    >
+                      WORKSPACE
+                    </button>
+                    <button
+                      onClick={() => { handleLogout(); setMenuOpen(false); }}
+                      className="w-full text-center py-2 bg-transparent text-rose-400 border border-rose-500/20 text-[10px] font-bold uppercase hover:bg-rose-950/20 hover:border-rose-500/40 transition-all rounded-none cursor-pointer font-mono"
+                    >
+                      LOGOUT
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { setShowAuth(true); setMenuOpen(false); }}
+                    className="w-full bg-white hover:bg-neutral-200 text-black py-3 text-xs font-bold uppercase tracking-widest border-none cursor-pointer rounded-none font-mono flex items-center justify-center gap-1.5"
+                  >
+                    <HiSparkles size={14} /> SIGN IN / CLAIM CREDITS
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Auth Gate Drawer overlay */}
       {showAuth && <Auth onClose={() => setShowAuth(false)} />}
