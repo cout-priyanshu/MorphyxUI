@@ -25,7 +25,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { ServerUrl } from '../App'
-import { setUserData } from '../redux/userSlice'
+import { setUserData, setAllComponents } from '../redux/userSlice' // <-- setAllComponents added
 import { LiveComponentPreview } from '../components/LiveComponentPreview'
 import gsap from 'gsap'
 
@@ -65,7 +65,7 @@ const Toast = ({ message, type, onClose }) => {
 }
 
 const Generate = () => {
-  const { userData } = useSelector((state) => state.user)
+  const { userData, allComponents } = useSelector((state) => state.user) // <-- allComponents added
   const userRole = userData?.Role || userData?.role
   const aiCredits = userData?.aiCredits || 0
   const lowCredits = userRole === "user" && aiCredits < 50
@@ -153,7 +153,27 @@ const Generate = () => {
         },
         { withCredentials: true }
       )
-      setSavedComponentId(res.data._id)
+
+      const savedData = res.data.component || res.data
+      const newSavedId = savedData._id || res.data._id
+      setSavedComponentId(newSavedId)
+
+      // Ensure proper structure and instantly update Redux
+      const formattedComponent = {
+        ...savedData,
+        _id: newSavedId,
+        name: generated.name,
+        code: generated.code,
+        props: generated.props,
+        visibility: savedData.visibility || "private",
+        owner: savedData.owner || userData?._id,
+        createdAt: savedData.createdAt || new Date().toISOString()
+      }
+
+      // Add new component to the beginning of allComponents in Redux
+      const existingList = Array.isArray(allComponents) ? allComponents : []
+      dispatch(setAllComponents([formattedComponent, ...existingList.filter(c => c._id !== newSavedId)]))
+
       showToast("Block Saved to Workspace Repository", "success")
       setSaving(false)
     } catch (error) {
@@ -173,6 +193,14 @@ const Generate = () => {
         { withCredentials: true }
       )
       setPublished(true)
+
+      // Update visibility in Redux to public
+      if (allComponents) {
+        dispatch(setAllComponents(allComponents.map(c => 
+          c._id === savedComponentId ? { ...c, visibility: "public" } : c
+        )))
+      }
+
       showToast("Unit Published to Registry", "success")
       setPublishing(false)
     } catch (error) {
@@ -307,17 +335,14 @@ const Generate = () => {
 
         {/* Blueprint Terminal Prompt Dock (Strict 0px Corners) */}
         <div className="gsap-gen-box relative border border-white/20 bg-[#111111] shadow-[0_25px_60px_rgba(0,0,0,0.85)] mb-10 rounded-none">
-          {/* Blueprint Corner Accents */}
           <span className="absolute top-2 left-2 text-white/25 font-mono text-[10px] select-none">+ SYS.IN</span>
           <span className="absolute top-2 right-2 text-white/25 font-mono text-[10px] select-none">UTF-8 // LLM</span>
 
-          {/* Prompt Header Telemetry */}
           <div className="flex items-center justify-between px-5 pt-7 pb-2 text-[10px] font-mono uppercase tracking-[2px] text-white/40 border-b border-white/10">
             <span>PROMPT INPUT SPECIFICATION</span>
             <span>MODEL: MORPHYX.NEURAL.v2</span>
           </div>
 
-          {/* Textarea */}
           <div className="p-5">
             <textarea
               onKeyDown={handleKeyDown}
@@ -334,13 +359,11 @@ const Generate = () => {
             />
           </div>
 
-          {/* Bottom Dock Controls */}
           <div className="flex items-center justify-between px-5 py-3.5 border-t border-white/10 bg-[#141414]">
             <span className="text-[11px] font-mono text-white/40 hidden sm:inline">
               SHORTCUT: <span className="text-white/80">CTRL + ENTER</span> TO EXECUTE
             </span>
 
-            {/* Split Synthesize Button (Matches Auth & Home Action Bar) */}
             <button
               onClick={handleGenerate}
               disabled={generating || !prompt.trim() || lowCredits}
@@ -372,7 +395,7 @@ const Generate = () => {
           </div>
         </div>
 
-        {/* Studio Canvas Stage (When Generated Component Exists) */}
+        {/* Studio Canvas Stage */}
         <AnimatePresence>
           {generated && (
             <motion.div
@@ -421,7 +444,6 @@ const Generate = () => {
                     </div>
                   )}
 
-                  {/* Mode Tab Switchers */}
                   <div className="flex gap-1 bg-[#0a0a0a] border border-white/15 p-1 rounded-none">
                     <button
                       onClick={() => setActiveTab("preview")}
@@ -544,7 +566,7 @@ const Generate = () => {
 
                   <button
                     onClick={() => navigate("/my-components")}
-                    className="flex items-center gap-1.5 px-4 py-2.5 bg-transparent hover:bg-white/10 text-white font-mono text-xs uppercase tracking-wider border border-white/20 transition-colors cursor-pointer rounded-none"
+                    className="flex items-center gap-1.5 px-4 py-2.5 bg-white text-black hover:bg-neutral-200 font-mono text-xs font-bold uppercase tracking-wider border border-white transition-colors cursor-pointer rounded-none"
                   >
                     WORKSPACE →
                   </button>
@@ -554,7 +576,7 @@ const Generate = () => {
           )}
         </AnimatePresence>
 
-        {/* Empty Placeholder View (Matches Home & Auth Style) */}
+        {/* Empty Placeholder View */}
         {!generated && !generating && (
           <div className="text-center py-16 border border-white/10 bg-[#0e0e0e] p-8 rounded-none">
             <div className="relative w-12 h-12 mx-auto mb-4 select-none">

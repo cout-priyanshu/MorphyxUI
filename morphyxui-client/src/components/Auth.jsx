@@ -20,6 +20,8 @@ import { ServerUrl } from '../App'
 import { useDispatch } from 'react-redux'
 import { setUserData } from '../redux/userSlice'
 import gsap from 'gsap'
+import { useNavigate } from 'react-router-dom'
+import Docs from '../pages/Docs'
 
 const steps = [
   { code: "01", icon: TbLogin2, title: "LOGIN WITH GOOGLE", desc: "Secure OAuth handshake to unlock all neural AI tools instantly." },
@@ -30,6 +32,7 @@ const steps = [
 ]
 
 function Auth({ onClose }) {
+  const navigate = useNavigate()
   const [active, setActive] = useState(0)
   const [loading, setLoading] = useState(false)
   const [mobileTab, setMobileTab] = useState('auth') // 'auth' | 'steps' for phone screens
@@ -393,12 +396,15 @@ function Auth({ onClose }) {
           {/* Bottom Documentation / Bypass Footer */}
           <div className="pt-3 sm:pt-4 border-t border-neutral-200 flex items-center justify-between text-[10px] sm:text-[11px] text-neutral-500">
             <span>No account needed for CLI.</span>
-            <button
-              onClick={handleClose}
+           <button
+              onClick={() => {
+               navigate('/docs')
+                  if (onClose) onClose() 
+              }}
               className="font-bold uppercase tracking-wider text-[#111] hover:bg-[#111] hover:text-white px-2 py-0.5 sm:px-2.5 sm:py-1 border border-[#111] transition-colors cursor-pointer bg-transparent rounded-none text-[9px] sm:text-[10px]"
-            >
+              >
               VIEW DOCS →
-            </button>
+           </button>
           </div>
 
         </div>

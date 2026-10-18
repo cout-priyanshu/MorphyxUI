@@ -6,54 +6,65 @@ import { execSync } from "child_process"
 
 export const saveComponent = async (req, res) => {
     try {
-        const { name, code, props } = req.body
+        const { name, code, props, visibility } = req.body
 
         if (!name || !code) {
             return res.status(400).json({ message: "Component name and code are required" })
         }
 
-        const user = await User.findById(req.userId)
+        const userId = req.userId || req.user?._id
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized: User ID not found" })
+        }
+
+        const user = await User.findById(userId)
         if (!user) {
             return res.status(404).json({ message: "User is not found" })
         }
 
-        let existing = null
+        let finalName = name.trim()
 
         if (user.role === "admin") {
-            existing = await Component.findOne({ name, visibility: "public" })
+            const existing = await Component.findOne({ name: finalName, visibility: "public" })
             if (existing) {
-                return res.status(400).json({
-                    message: "Admin cannot create duplicate public component name",
-                })
+                // Admin duplicate name par unique suffix jod dega
+                finalName = `${finalName}_${Date.now().toString().slice(-4)}`
             }
         } else {
-            existing = await Component.findOne({
-                name,
-                owner: req.userId,
+            const existing = await Component.findOne({
+                name: finalName,
+                owner: userId,
             })
             if (existing) {
-                return res.status(400).json({
-                    message: "You already have a component with this name",
-                })
+                // User duplicate name par fail karne ke bajaye unique suffix laga dega
+                finalName = `${finalName}_${Date.now().toString().slice(-4)}`
             }
         }
 
+        // Component save with explicit private visibility and owner
         const component = await Component.create({
-            name,
+            name: finalName,
             code,
-            props: props || [],
-            owner: req.userId,
+            props: Array.isArray(props) ? props : [],
+            owner: userId,
+            visibility: visibility || "private",
         })
 
-        return res.status(200).json(component)
+        return res.status(200).json({
+            success: true,
+            message: "Component saved successfully",
+            component
+        })
     } catch (error) {
+        console.error("Component save error:", error)
         return res.status(500).json({ message: `Failed to save component: ${error.message}` })
     }
 }
 
 export const publishComponent = async (req, res) => {
     try {
-        const user = await User.findById(req.userId)
+        const userId = req.userId || req.user?._id
+        const user = await User.findById(userId)
         if (!user || user.role !== "admin") {
             return res.status(403).json({
                 message: "Only admin can publish",
@@ -68,7 +79,7 @@ export const publishComponent = async (req, res) => {
             })
         }
 
-        if (component.owner.toString() !== req.userId.toString()) {
+        if (component.owner.toString() !== userId.toString()) {
             return res.status(403).json({
                 message: "You can only publish your own components",
             })
@@ -134,12 +145,12 @@ export const publishComponent = async (req, res) => {
 
 export const getAllComponents = async (req, res) => {
     try {
-        const components = await Component.find().populate("owner", "name , email").sort({createdAt:-1})
-        if(!components){
-            return res.status(404).json({message:"Components are not found"})
-        }
-        return res.status(200).json(components)
+        const components = await Component.find()
+            .populate("owner", "name email")
+            .sort({ createdAt: -1 })
+
+        return res.status(200).json(components || [])
     } catch (error) {
-        return res.status(500).json({message:"`Failed to get All Components ${error}`"})
+        return res.status(500).json({ message: `Failed to get All Components: ${error.message}` })
     }
 }

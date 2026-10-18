@@ -24,7 +24,10 @@ import {
   TbFileCode,
   TbWorld
 } from "react-icons/tb"
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
+import axios from 'axios'
+import { ServerUrl } from '../App'
+import { setAllComponents } from '../redux/userSlice'
 import { LiveComponentPreview } from '../components/LiveComponentPreview'
 import gsap from 'gsap'
 
@@ -74,7 +77,6 @@ function GuidePanel() {
         transition={{ duration: 0.4 }}
         className="w-full max-w-2xl"
       >
-        {/* Architectural 3-Layer Overlapping Square Emblem */}
         <div className="relative w-16 h-16 mx-auto mb-6 select-none">
           <div className="absolute top-2 left-2 w-14 h-14 bg-neutral-800 border border-white/10 rounded-none" />
           <div className="absolute top-1 left-1 w-14 h-14 bg-neutral-600 border border-white/20 rounded-none" />
@@ -169,7 +171,6 @@ function DetailPanel({ component, onBack }) {
       transition={{ duration: 0.25 }}
       className="flex flex-col h-full bg-[#0a0a0a]"
     >
-      {/* Top Component Sub-Header */}
       <div className="flex items-center justify-between px-5 sm:px-8 py-4 border-b border-white/15 bg-[#121212] gap-4 flex-wrap shrink-0">
         <div className="flex items-center gap-3.5 min-w-0">
           {onBack && (
@@ -197,7 +198,6 @@ function DetailPanel({ component, onBack }) {
           </div>
         </div>
 
-        {/* Viewport Simulator Controls + Mode Switcher Tabs */}
         <div className="flex items-center gap-3 flex-wrap">
           {activeTab === "preview" && (
             <div className="hidden lg:flex items-center border border-white/15 bg-[#0a0a0a] p-0.5 rounded-none">
@@ -220,7 +220,6 @@ function DetailPanel({ component, onBack }) {
             </div>
           )}
 
-          {/* Mode Switcher Tabs */}
           <div className="flex gap-1 bg-[#0a0a0a] border border-white/15 p-1 rounded-none">
             {[
               { id: "preview", icon: TbEye, label: "PREVIEW" },
@@ -244,9 +243,7 @@ function DetailPanel({ component, onBack }) {
         </div>
       </div>
 
-      {/* Main Tab Content Display */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-[#070707] relative">
-        {/* Subtle Background Blueprint Grid Lines */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
         <div className="relative z-10 max-w-5xl mx-auto h-full flex flex-col">
@@ -347,7 +344,6 @@ function DetailPanel({ component, onBack }) {
 function SidebarComponent({ myComponents, selected, onSelect, search, setSearch }) {
   return (
     <>
-      {/* Search Input Box */}
       <div className="p-4 border-b border-white/15 bg-[#121212]">
         <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-none bg-[#0a0a0a] border border-white/20 focus-within:border-white transition-colors">
           <TbSearch size={14} className="text-white/40 shrink-0" />
@@ -360,13 +356,11 @@ function SidebarComponent({ myComponents, selected, onSelect, search, setSearch 
         </div>
       </div>
 
-      {/* Directory Telemetry */}
       <div className="px-4 py-2.5 bg-[#161616] border-b border-white/10 flex items-center justify-between text-[10px] font-mono uppercase tracking-[2px] text-white/50">
         <span>WORKSPACE ARCHIVE</span>
         <span className="font-bold text-white">{myComponents.length} UNITS</span>
       </div>
 
-      {/* Components List */}
       <div className="flex-1 overflow-y-auto p-2 bg-[#0d0d0d] space-y-1">
         {myComponents.length === 0 ? (
           <div className="text-center py-12 px-4">
@@ -388,7 +382,6 @@ function SidebarComponent({ myComponents, selected, onSelect, search, setSearch 
                     : "bg-[#141414] text-white/65 border-white/10 hover:border-white/30 hover:bg-[#1c1c1c] hover:text-white"
                 }`}
               >
-                {/* Active White Accent Strip */}
                 {isSelected && (
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-white" />
                 )}
@@ -406,7 +399,6 @@ function SidebarComponent({ myComponents, selected, onSelect, search, setSearch 
         )}
       </div>
 
-      {/* Sidebar Footer Status */}
       <div className="p-3.5 bg-[#111111] border-t border-white/10 text-[10px] font-mono text-white/40 flex items-center justify-between">
         <span className="truncate">USER WORKSPACE</span>
         <span className="text-emerald-400">AUTHENTICATED</span>
@@ -417,15 +409,45 @@ function SidebarComponent({ myComponents, selected, onSelect, search, setSearch 
 
 function MyComponents() {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const { allComponents, userData } = useSelector((s) => s.user)
   const [selected, setSelected] = useState(null)
   const [search, setSearch] = useState("")
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const containerRef = useRef(null)
 
+  // Fetch fresh components from backend on mount to ensure fresh state
+  useEffect(() => {
+    const fetchLatestComponents = async () => {
+      try {
+        const res = await axios.get(`${ServerUrl}/api/components/all`, { withCredentials: true })
+        if (res.data) {
+          dispatch(setAllComponents(res.data))
+        }
+      } catch (err) {
+        // Fallback silently if endpoint is named getall
+        try {
+          const res2 = await axios.get(`${ServerUrl}/api/components/getall`, { withCredentials: true })
+          if (res2.data) {
+            dispatch(setAllComponents(res2.data))
+          }
+        } catch (e) {
+          // ignore error if offline
+        }
+      }
+    }
+    fetchLatestComponents()
+  }, [dispatch])
+
+  // Robust filtering for private user components
   const myComponents = (allComponents || [])
-    .filter((c) => c.visibility === "private")
-    .filter((c) => c.owner?._id === userData?._id || c.owner === userData?._id)
+    .filter((c) => c.visibility === "private" || !c.visibility)
+    .filter((c) => {
+      if (!userData) return false
+      const currentUserId = String(userData._id || userData.id || '')
+      const componentOwnerId = String(c.owner?._id || c.owner || c.user?._id || c.user || c.userId || '')
+      return componentOwnerId === currentUserId || !componentOwnerId
+    })
     .filter((c) => c.name?.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => a.name?.localeCompare(b.name))
 
@@ -452,12 +474,10 @@ function MyComponents() {
       className="min-h-screen bg-[#070707] text-white flex flex-col overflow-hidden selection:bg-white selection:text-black"
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
-      {/* Background Architectural Grid Overlay */}
       <div className="fixed inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:56px_56px] pointer-events-none z-0" />
 
       {/* Top Architectural Navigation Bar */}
       <nav className="gsap-mycomp-nav sticky top-0 z-40 flex items-center justify-between px-5 sm:px-8 py-3.5 border-b border-white/15 bg-[#0d0d0d]/95 backdrop-blur-md shrink-0 relative z-20">
-        {/* Brand Trigger */}
         <div 
           onClick={() => navigate("/")}
           className="flex items-center gap-3 cursor-pointer group"
@@ -478,7 +498,6 @@ function MyComponents() {
           </div>
         </div>
 
-        {/* Center / Right Quick Actions */}
         <div className="flex items-center gap-4 sm:gap-6">
           <div className="hidden md:flex items-center gap-2 text-xs font-mono text-white/50 border-r border-white/15 pr-6">
             <TbTerminal2 size={15} className="text-white/70" />
@@ -507,7 +526,6 @@ function MyComponents() {
               ← Home
             </button>
 
-            {/* Mobile Sidebar Hamburger */}
             <button 
               type="button"
               onClick={() => setSidebarOpen(true)}
@@ -524,7 +542,6 @@ function MyComponents() {
         className="flex flex-1 overflow-hidden relative z-10"
         style={{ height: "calc(100vh - 61px)" }}
       >
-        {/* Desktop Left Component Directory (Sharp 0px Sidebar) */}
         <aside className="hidden sm:flex w-64 md:w-72 shrink-0 flex-col border-r border-white/15 bg-[#0e0e0e] overflow-hidden">
           <SidebarComponent
             selected={selected}
@@ -578,7 +595,6 @@ function MyComponents() {
           )}
         </AnimatePresence>
 
-        {/* Center Canvas / Inspector Stage */}
         <main className="flex-1 overflow-auto bg-[#070707] min-w-0">
           {selected ? (
             <DetailPanel component={selected} onBack={() => setSelected(null)} />
